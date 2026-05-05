@@ -53,12 +53,12 @@ No gate IDs assigned.
 - Documents the coordination requirement before proceeding
 
 ### Case 5: Context pass — checks engine version reference
-**Input:** Engine version reference (Godot 4.6) provided in context. Request: "Set up the default physics engine for the project."
+**Input:** Engine version reference (Unreal Engine 5.7) provided in context. Request: "Set up the default physics integration for the project."
 **Expected behavior:**
-- Reads the engine version reference and notes Godot 4.6 change: Jolt physics is now the default
-- Produces configuration guidance that accounts for the Jolt-as-default change (4.6 migration note)
-- Flags any API differences between GodotPhysics and Jolt that could affect existing code
-- Does NOT suggest deprecated or pre-4.6 physics setup steps without noting they apply to older versions
+- Reads the UE 5.7 reference and confirms Chaos is the default physics engine
+- Produces configuration guidance that accounts for Chaos's settings (Async Physics, sub-stepping, scratch buffer sizing)
+- Flags any API differences between PhysX-era code and Chaos that could affect legacy snippets the LLM might suggest
+- Does NOT suggest pre-5.x PhysX setup steps without noting they no longer apply
 
 ---
 

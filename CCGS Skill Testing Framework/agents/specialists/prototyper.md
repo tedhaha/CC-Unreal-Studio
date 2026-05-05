@@ -52,15 +52,15 @@
 - Does NOT recommend persisting with the prototype mechanic because of sunk cost
 - Does NOT mark the result as inconclusive — after 4 sessions with consistent negative responses, abandonment is the correct verdict
 
-### Case 5: Context pass — using the project's engine scripting language
-**Input context**: Project uses Godot 4.6 with GDScript (configured in technical-preferences.md).
+### Case 5: Context pass — using the project's engine
+**Input context**: Project uses Unreal Engine 5.7 (configured in technical-preferences.md).
 **Input**: "Prototype a basic grid movement system — player clicks a tile and the character moves to it."
 **Expected behavior**:
-- Produces the prototype in GDScript — not Python, C#, or pseudocode
-- Uses Godot 4.6 node types appropriate for a grid: TileMap or a custom grid manager node, CharacterBody2D or Node2D for the player
-- Does NOT apply production coding standards (no required test coverage, no doc comments, global state acceptable)
-- Writes the output to `prototypes/grid-movement/` not to `src/`
-- If a Godot 4.6 API is uncertain (given the LLM knowledge cutoff noted in VERSION.md), flags the specific API with a note to verify against the Godot 4.6 docs
+- Produces the prototype as a Blueprint-only setup OR a thin C++ + Blueprint hybrid — whichever is faster to iterate on (Blueprint is usually right for prototypes)
+- Uses Unreal types appropriate for a grid: a `UGridSubsystem` or a Blueprint `BP_GridManager` actor, an `ACharacter` or `APawn` for the player, `UNavigationSystemV1` line trace for the click target
+- Does NOT apply production coding standards (no required test coverage, no doc comments, global Game Instance state acceptable)
+- Writes the output to `prototypes/grid-movement/` (Content folder + minimal Source if any), not to `Source/MyGame/`
+- If a UE 5.7 API is uncertain (given the LLM knowledge cutoff noted in VERSION.md), flags the specific API with a note to verify against `docs/engine-reference/unreal/`
 
 ---
 

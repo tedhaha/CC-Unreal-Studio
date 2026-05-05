@@ -239,14 +239,14 @@ who this game is actually for:
 Ground the concept in reality:
 
 - **Target platform**: Use `AskUserQuestion` — "What platforms are you targeting for this game?"
-  Options: `PC (Steam / Epic)` / `Mobile (iOS / Android)` / `Console` / `Web / Browser` / `Multiple platforms`
-  Record the answer — it directly shapes the engine recommendation and will be passed to `/setup-engine`.
-  Note platform implications if relevant (e.g., mobile means Unity is strongly preferred; console means Godot has limitations; web means Godot exports cleanly).
+  Options: `PC (Steam / Epic)` / `Console` / `Mobile (iOS / Android)` / `Web / Browser` / `Multiple platforms`
+  Record the answer — this fork is **Unreal Engine 5 only**, so call out platform friction explicitly:
+  PC and console are first-class for UE5; mobile is workable but requires extra packaging/scalability work and the editor is heavy for mobile-only teams; web (HTML5/Pixel Streaming) is not first-class — flag this honestly if the user picks Web. The platform answer feeds into scope and risk discussion, not engine selection.
 
-- **Engine experience**: Use `AskUserQuestion` — "Do you already have an engine you work in?"
-  Options: `Godot` / `Unity` / `Unreal Engine 5` / `No preference — help me decide`
-  - If they pick an engine → record it as their preference and move on. Do NOT second-guess it.
-  - If "No preference" → tell them: "Run `/setup-engine` after this session — it will walk you through the full decision based on your concept and platform target." Do not make a recommendation here.
+- **Engine note**: This fork is pinned to **Unreal Engine 5**. Don't ask the user
+  to pick an engine. If they raise the question, tell them: "This fork ships
+  the UE5 agent set only. If you need Godot or Unity, see the upstream
+  Donchitos/Claude-Code-Game-Studios template."
 - **Art pipeline**: What's the art style and how labor-intensive is it?
 - **Content scope**: Estimate level/area count, item count, gameplay hours
 - **MVP definition**: What's the absolute minimum build that tests "is the

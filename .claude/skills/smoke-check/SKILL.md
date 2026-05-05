@@ -74,43 +74,24 @@ Report findings before proceeding: "Environment: [engine]. Test directory:
 
 ## Phase 2: Run Automated Tests
 
-Attempt to run the test suite via Bash. Select the command based on the engine
-detected in Phase 1:
+Attempt to run the Unreal Automation Test suite via Bash.
 
-**Godot 4:**
+**Headless run (preferred when `UE_EDITOR_PATH` is set):**
 ```bash
-godot --headless --script tests/gdunit4_runner.gd 2>&1
+"$UE_EDITOR_PATH" "$(ls -1 *.uproject | head -1)" \
+  -ExecCmds="Automation RunTests MyGame.; Quit" \
+  -nullrhi -unattended -nopause -NoLogTimes -log 2>&1
 ```
-If the GDUnit4 runner script does not exist at that path, try:
+
+**Fallback — read most recent test logs if a fresh run is not possible:**
 ```bash
-godot --headless -s addons/gdunit4/GdUnitRunner.gd 2>&1
+ls -t Saved/Logs/ 2>/dev/null | grep -iE "test|automation" | head -5
 ```
-If neither path exists, note: "GDUnit4 runner not found — confirm the runner
-path for your test framework."
+Parse the most recent log for `Test Completed. Result=...` lines and
+`Result={Success|Fail|Warnings}` blocks.
 
-**Unity:**
-Unity tests require the editor and cannot be run headlessly via shell in most
-environments. Check for recent test result artifacts:
-```bash
-ls -t test-results/ 2>/dev/null | head -5
-```
-If test result files exist (XML or JSON), read the most recent one and parse
-PASS/FAIL counts. If no artifacts exist: "Unity tests must be run from the
-editor or CI pipeline. Please confirm test status manually before proceeding."
-
-**Unreal Engine:**
-```bash
-ls -t Saved/Logs/ 2>/dev/null | grep -i "test\|automation" | head -5
-```
-If no matching log found: "UE automation tests must be run via the Session
-Frontend or CI pipeline. Please confirm test status manually."
-
-**Unknown engine / not configured:**
-"Engine not configured in `.claude/docs/technical-preferences.md`. Run
-`/setup-engine` to specify the engine, then re-run `/smoke-check`."
-
-**If the test runner is not available in this environment** (engine binary not
-on PATH, runner script not found, etc.), report clearly:
+**If `UE_EDITOR_PATH` is not set or the editor binary is unavailable** (sandbox
+without UE installed, CI runner without an editor, etc.), report clearly:
 
 "Automated tests could not be executed — engine binary not found on PATH.
 Status will be recorded as NOT RUN. Confirm test results from your local IDE

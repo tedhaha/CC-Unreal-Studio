@@ -59,18 +59,20 @@ Parse the argument:
 For each content type found in Phase 1, scan the relevant directories to count
 what has been implemented. Use Glob and Grep to locate files.
 
-**Levels / Areas / Maps:**
-- Glob `assets/**/*.tscn`, `assets/**/*.unity`, `assets/**/*.umap`
-- Glob `src/**/*.tscn`, `src/**/*.unity`
-- Look for scene files in subdirectories named `levels/`, `areas/`, `maps/`,
-  `worlds/`, `stages/`
-- Count unique files that appear to be level/scene definitions (not UI scenes)
+**Levels / Maps:**
+- Glob `Content/**/*.umap`, `assets/**/*.umap`
+- Look for level files in subdirectories named `Levels/`, `Maps/`, `Areas/`,
+  `Worlds/`, `Stages/`
+- Count unique `.umap` files that appear to be playable levels (skip UI-only
+  or empty-template maps)
 
 **Enemies / Characters / NPCs:**
-- Glob `assets/data/**/enemies/**`, `assets/data/**/characters/**`
-- Glob `src/**/enemies/**`, `src/**/characters/**`
-- Look for `.json`, `.tres`, `.asset`, `.yaml` data files defining entity stats
-- Look for scene/prefab files in character subdirectories
+- Glob `Content/**/Characters/**`, `Content/**/Enemies/**`, `Content/**/NPCs/**`
+- Glob `Source/**/Characters/**.h`, `Source/**/Enemies/**.h`, `Source/**/NPCs/**.h`
+- Look for `.json`, DataTable (`DT_*.uasset`), DataAsset (`DA_*.uasset`)
+  files defining entity stats
+- Look for Blueprint character classes (`BP_*.uasset`) under character
+  subdirectories
 
 **Items / Equipment / Loot:**
 - Glob `assets/data/**/items/**`, `assets/data/**/equipment/**`,

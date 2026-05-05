@@ -4,13 +4,13 @@
 
 **Starting State:**
 - `design/gdd/combat-system.md` exists and reviewed
-- Godot 4.6 project set up with basic scene structure
-- No gameplay code written yet
+- Unreal Engine 5.7 project set up with a basic Game Mode + Pawn scaffolding
+- No combat code written yet
 - Sprint goal: "Implement core combat damage calculation"
 
 **Session Duration:** ~30 minutes
 **Turns:** 10
-**Outcome:** Working damage calculator with tests, ready for integration
+**Outcome:** Working damage calculator with Automation Tests, ready for integration
 
 ---
 
@@ -21,40 +21,49 @@
 
 ## Turn 2: Agent Reads Design and Asks Clarifying Questions
 
-**Agent (gameplay-programmer):**
+**Agent (gameplay-programmer + unreal-specialist):**
 > I've read `design/gdd/combat-system.md`. The damage formula is:
 >
 > ```
-> final_damage = base_damage * (1 + attack_stat * 0.1) * crit_multiplier * type_effectiveness * (1 - target_defense)
+> FinalDamage = BaseDamage * (1 + AttackStat * 0.1) * CritMultiplier * TypeEffectiveness * (1 - TargetDefense)
 > ```
 >
 > Before implementing, I need to clarify some details that aren't specified in the doc:
 >
 > **Architecture Questions:**
-> 1. Should `DamageCalculator` be a static utility class (no state, just calculations) or an autoload singleton?
-> 2. Where should `base_damage` come from? (Weapon data? Character stats? Ability data?)
-> 3. Where should `type_effectiveness` values live? (Per weapon? Per damage type? Separate data file?)
+> 1. Should `UDamageCalculator` be a `UBlueprintFunctionLibrary` (pure static helpers, easy to call from BP)
+>    or a regular `UObject` exposed through a Game Subsystem?
+> 2. Where should `BaseDamage` come from? (Weapon `UDataAsset`? `UCharacterStats` component? `UGameplayAbility`?)
+> 3. Where should `TypeEffectiveness` values live? (Per-weapon overrides? Per-damage-type table?
+>    A separate `UDataTable` keyed by `<DamageType, ArmorType>` pair?)
 >
 > **Spec Ambiguities:**
-> 4. Should `attack_stat` be clamped to a range? (Prevents exponential scaling bugs)
-> 5. The doc says "critical hits do 2x damage" but doesn't specify rounding. Should I `floor()`, `ceil()`, or `round()` the final damage?
-> 6. What happens if `target_defense` >= 1.0? (100% mitigation or higher) Should damage go negative or clamp to 0?
+> 4. Should `AttackStat` be clamped to a range? (Prevents exponential scaling bugs)
+> 5. The doc says "critical hits do 2x damage" but doesn't specify rounding. Should I `FMath::FloorToInt`,
+>    `CeilToInt`, or `RoundToInt` the final damage?
+> 6. What happens if `TargetDefense >= 1.0`? (100% mitigation or higher) Should damage go negative or clamp to 0?
 >
 > **Integration:**
 > 7. I don't see a design doc for the Health/HP system. Should I create a minimal one, or is that coming separately?
+>
+> **GAS question:** Should this go through the Gameplay Ability System (`UGameplayEffect` driving an
+> `UAttributeSet`)? The project doesn't have GAS enabled yet — flagging it because adding GAS later is
+> a much bigger refactor than starting with it. If you want plain `UActorComponent`-based health, I'll
+> proceed with that.
 >
 > Please clarify so I can implement this correctly the first time.
 
 ## Turn 3: User Resolves Ambiguities
 
 **User:**
-> 1. Static utility - no state needed
-> 2. Base damage from Weapon resource. I'll create a simple Weapon class.
-> 3. Type effectiveness in a separate data file `assets/data/combat_damage.json`
-> 4. Yes, clamp attack_stat to 0-100
-> 5. Use `floor()` to round down to integers
-> 6. Clamp damage to minimum of 1 (always do at least 1 damage, even with 100% defense)
-> 7. Create a minimal health component - just current_hp, max_hp, and take_damage() method
+> 1. BlueprintFunctionLibrary - no state needed, want it callable from BP for designer iteration.
+> 2. Base damage from a `UWeaponDataAsset`. I'll create a simple one.
+> 3. Type effectiveness in a single `UDataTable` (`DT_TypeEffectiveness`) — easier than a JSON for designers.
+> 4. Yes, clamp `AttackStat` to 0-100.
+> 5. Use `FMath::FloorToInt` to round down to integers.
+> 6. Clamp damage to a minimum of 1 (always do at least 1 damage, even with 100% defense).
+> 7. Create a minimal `UHealthComponent` — `CurrentHP`, `MaxHP`, `TakeDamage()`, replicated.
+> 8. Skip GAS for now — we're solo and the project doesn't need ability prediction yet. Plain `UActorComponent`.
 
 ## Turn 4: Agent Proposes Architecture
 
@@ -63,102 +72,141 @@
 >
 > **Files I'll create:**
 > ```
-> src/gameplay/combat/damage_calculator.gd     # Static damage formula
-> src/gameplay/combat/health_component.gd      # HP tracking node component
-> src/gameplay/combat/weapon.gd                # Weapon resource
-> assets/data/combat_damage.json               # Type effectiveness values
-> design/gdd/health-system.md                  # Minimal health doc
-> tests/combat/test_damage_calculator.gd       # Unit tests
+> Source/MyGame/Combat/DamageCalculator.h            # UBlueprintFunctionLibrary
+> Source/MyGame/Combat/DamageCalculator.cpp
+> Source/MyGame/Combat/HealthComponent.h             # UActorComponent (replicated)
+> Source/MyGame/Combat/HealthComponent.cpp
+> Source/MyGame/Combat/WeaponDataAsset.h             # UDataAsset
+> Source/MyGame/Combat/WeaponDataAsset.cpp
+> Source/MyGame/Combat/CharacterStats.h              # USTRUCT
+> Content/Game/Combat/DT_TypeEffectiveness.uasset    # UDataTable (designer-edited)
+> design/gdd/health-system.md                        # Minimal health doc
+> Source/MyGameTests/Private/Combat/DamageCalculatorTest.cpp  # Automation Test
 > ```
 >
 > **Architecture Details:**
 >
-> **DamageCalculator** (static class):
-> ```gdscript
-> class_name DamageCalculator
-> extends RefCounted
->
-> static func calculate_damage(
->     attacker_stats: Dictionary,
->     weapon: Weapon,
->     defender_stats: Dictionary,
->     is_crit: bool = false
-> ) -> int:
->     # Implementation here
->     return floori(final_damage)
-> ```
->
-> **HealthComponent** (node component):
-> ```gdscript
-> extends Node
-> class_name HealthComponent
->
-> signal health_changed(old_hp: int, new_hp: int)
-> signal died()
->
-> @export var max_hp: int = 100
-> var current_hp: int:
->     set(value):
->         # Clamp and emit signals
->
-> func take_damage(amount: int) -> void:
->     current_hp -= amount
->     if current_hp <= 0:
->         died.emit()
-> ```
->
-> **Weapon** (resource):
-> ```gdscript
-> extends Resource
-> class_name Weapon
->
-> @export var base_damage: float
-> @export var damage_type: String  # "physical", "fire", "ice", etc.
-> ```
->
-> **combat_damage.json**:
-> ```json
+> **`UDamageCalculator`** (BP function library):
+> ```cpp
+> UCLASS()
+> class MYGAME_API UDamageCalculator : public UBlueprintFunctionLibrary
 > {
->   "crit_multiplier": 2.0,
->   "attack_stat_min": 0,
->   "attack_stat_max": 100,
->   "type_effectiveness": {
->     "physical": { "armored": 0.5, "flesh": 1.0, "crystal": 1.5 },
->     "fire": { "armored": 1.0, "flesh": 1.2, "crystal": 0.3 }
->   }
-> }
+>     GENERATED_BODY()
+>
+> public:
+>     UFUNCTION(BlueprintCallable, Category = "Combat")
+>     static int32 CalculateDamage(
+>         const FCharacterStats& Attacker,
+>         const UWeaponDataAsset* Weapon,
+>         const FCharacterStats& Defender,
+>         bool bIsCrit = false);
+> };
 > ```
 >
-> **Question:** This architecture makes `DamageCalculator` easily testable (pure function, no dependencies). The `HealthComponent` uses signals for VFX/SFX hookup. Does this match your expectations, or should I change anything before implementing?
+> **`UHealthComponent`** (replicated component):
+> ```cpp
+> UCLASS(ClassGroup = (Combat), meta = (BlueprintSpawnableComponent))
+> class MYGAME_API UHealthComponent : public UActorComponent
+> {
+>     GENERATED_BODY()
+>
+> public:
+>     UHealthComponent();
+>
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+>     int32 MaxHP = 100;
+>
+>     UPROPERTY(ReplicatedUsing = OnRep_CurrentHP, BlueprintReadOnly, Category = "Health")
+>     int32 CurrentHP;
+>
+>     UFUNCTION(BlueprintCallable, Category = "Health")
+>     void TakeDamage(int32 Amount, AActor* Instigator);
+>
+>     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHealthChanged, int32, OldHP, int32, NewHP);
+>     UPROPERTY(BlueprintAssignable, Category = "Health")
+>     FHealthChanged OnHealthChanged;
+>
+>     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDied);
+>     UPROPERTY(BlueprintAssignable, Category = "Health")
+>     FDied OnDied;
+>
+> protected:
+>     UFUNCTION()
+>     void OnRep_CurrentHP(int32 OldHP);
+>
+>     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out) const override;
+> };
+> ```
+>
+> **`UWeaponDataAsset`**:
+> ```cpp
+> UCLASS(BlueprintType)
+> class MYGAME_API UWeaponDataAsset : public UDataAsset
+> {
+>     GENERATED_BODY()
+>
+> public:
+>     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+>     float BaseDamage = 10.f;
+>
+>     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+>     FName DamageType = TEXT("Physical");  // Physical / Fire / Ice / etc.
+> };
+> ```
+>
+> **`DT_TypeEffectiveness`** (UDataTable rows, struct shown for reference):
+> ```cpp
+> USTRUCT(BlueprintType)
+> struct FTypeEffectivenessRow : public FTableRowBase
+> {
+>     GENERATED_BODY()
+>
+>     UPROPERTY(EditAnywhere) FName DamageType;   // row key joins via composite lookup
+>     UPROPERTY(EditAnywhere) FName ArmorType;
+>     UPROPERTY(EditAnywhere) float Multiplier = 1.f;
+> };
+> ```
+>
+> **`combat_tuning.json`** is replaced by `Content/Game/Combat/DT_CombatTuning.uasset` (UDataTable
+> with one row holding `CritMultiplier`, `AttackStatMin`, `AttackStatMax`). Designers edit this in the
+> editor without touching code or JSON.
+>
+> **Question:** This architecture makes `UDamageCalculator` easily unit-testable (pure static, no actor
+> dependencies). The `UHealthComponent` is server-authoritative with `OnRep_` for client visuals. Does
+> this match your expectations, or should I change anything before implementing?
 
 ## Turn 5: User Approves with Minor Change
 
 **User:**
-> Looks good, but change `attacker_stats` and `defender_stats` to proper typed dictionaries or classes. I don't want untyped Dictionary bags floating around.
+> Looks good, but tighten `FCharacterStats` so it's a `USTRUCT` with explicit field types — I don't want
+> loose `TMap<FName, float>` lookups floating around. And use `UPROPERTY(EditAnywhere)` so designers can
+> tune base values per-actor in the editor.
 
 ## Turn 6: Agent Refines Architecture
 
 **Agent:**
-> Absolutely - type safety is important. I'll create a `CharacterStats` resource:
+> Absolutely — type safety + editor exposure is important. Here's the struct:
 >
-> ```gdscript
-> extends Resource
-> class_name CharacterStats
+> ```cpp
+> USTRUCT(BlueprintType)
+> struct MYGAME_API FCharacterStats
+> {
+>     GENERATED_BODY()
 >
-> @export var attack_stat: int = 0  # 0-100
-> @export var defense: float = 0.0  # 0.0-1.0 (0-100% mitigation)
-> @export var armor_type: String = "flesh"  # for type effectiveness lookup
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats", meta = (ClampMin = 0, ClampMax = 100))
+>     int32 AttackStat = 10;
+>
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats", meta = (ClampMin = 0.f, ClampMax = 1.f))
+>     float Defense = 0.f;  // 0..1 (0–100% mitigation)
+>
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+>     FName ArmorType = TEXT("Flesh");
+> };
 > ```
 >
-> Then `DamageCalculator.calculate_damage()` signature becomes:
-> ```gdscript
-> static func calculate_damage(
->     attacker: CharacterStats,
->     weapon: Weapon,
->     defender: CharacterStats,
->     is_crit: bool = false
-> ) -> int
-> ```
+> Then `UDamageCalculator::CalculateDamage(...)` takes `const FCharacterStats&` for both attacker and
+> defender. Engine clamps via `ClampMin`/`ClampMax` happen at edit time; the calculator additionally
+> clamps at runtime in case stats came from a non-editor source (saves, network).
 >
 > Much cleaner. May I proceed with implementation?
 
@@ -173,42 +221,44 @@
 > Implementation complete! Here's what I created:
 >
 > **Files Created:**
-> - ✅ `src/gameplay/combat/damage_calculator.gd` (82 lines)
-> - ✅ `src/gameplay/combat/health_component.gd` (45 lines)
-> - ✅ `src/gameplay/combat/weapon.gd` (12 lines)
-> - ✅ `src/gameplay/combat/character_stats.gd` (16 lines)
-> - ✅ `assets/data/combat_damage.json` (validated JSON)
+> - ✅ `Source/MyGame/Combat/DamageCalculator.h/.cpp` (~90 lines)
+> - ✅ `Source/MyGame/Combat/HealthComponent.h/.cpp` (~110 lines, includes replication)
+> - ✅ `Source/MyGame/Combat/WeaponDataAsset.h/.cpp` (~25 lines)
+> - ✅ `Source/MyGame/Combat/CharacterStats.h` (struct, ~20 lines)
+> - ✅ `Content/Game/Combat/DT_TypeEffectiveness.uasset` (5 starter rows for Physical/Fire vs Flesh/Armored/Crystal)
+> - ✅ `Content/Game/Combat/DT_CombatTuning.uasset` (1 row: CritMultiplier=2.0, AttackStatMin=0, AttackStatMax=100)
 > - ✅ `design/gdd/health-system.md` (minimal 8-section doc)
 >
 > **Rules Enforcement Results:**
 >
 > The `gameplay-code` rule automatically flagged 2 issues during implementation:
-> 1. ❌ `crit_multiplier` was hardcoded as `2.0` in damage_calculator.gd
->    - **Fixed:** Moved to `combat_damage.json` and loaded from config
-> 2. ❌ `HealthComponent` had direct `print()` debug output
->    - **Fixed:** Removed hardcoded debug, added proper signals instead
+> 1. ❌ `CritMultiplier` was hardcoded as `2.0f` in `DamageCalculator.cpp`
+>    - **Fixed:** Moved to `DT_CombatTuning` and looked up at runtime via cached pointer
+> 2. ❌ `HealthComponent::TakeDamage` had a `UE_LOG(..., Warning, ...)` debug line
+>    - **Fixed:** Demoted to `Verbose` and gated behind `#if !UE_BUILD_SHIPPING`
 >
 > The `data-files` rule validated:
-> - ✅ `combat_damage.json` is valid JSON
-> - ✅ Naming convention matches `[system]_[name].json`
-> - ✅ All values have comment documentation
+> - ✅ `DT_*` naming convention matches project standard
+> - ✅ Both DataTables use a typed RowStruct (no untyped rows)
 >
 > **Implementation Notes:**
-> - Attack stat is clamped in `calculate_damage()` before use
+> - `AttackStat` clamped in `CalculateDamage()` before use (defense in depth — editor `ClampMin` is the first line)
 > - Damage always returns minimum of 1 (per your requirement)
-> - Type effectiveness defaults to 1.0 if combo not found in config
-> - All numeric values loaded from `combat_damage.json` for designer tuning
+> - Type effectiveness defaults to `1.0` if `(DamageType, ArmorType)` combo not found in DataTable
+> - All numeric tuning values live in DataTables for designer iteration without recompile
+> - `UHealthComponent::TakeDamage` is `BlueprintAuthorityOnly` to enforce server-only damage application
 >
-> **Manual Testing:**
-> I created a quick test scene and validated:
-> - Base damage: 10, attack_stat: 50 → Damage: 15 ✓
-> - Same but with crit → Damage: 30 ✓
-> - With 50% defense → Damage: 15 (before defense) → 7 (after) ✓
-> - With 100% defense → Damage: 1 (clamped) ✓
+> **Manual Testing (PIE):**
+> I dropped two test pawns into a sandbox map and validated:
+> - Base damage 10, AttackStat 50 → Damage 15 ✓
+> - Same but with crit → Damage 30 ✓
+> - With 50% defense → Damage 15 (before defense) → 7 (after) ✓
+> - With 100% defense → Damage 1 (clamped) ✓
+> - Listen-server PIE: client HUD updates via `OnRep_CurrentHP` ✓
 >
 > **Next Steps - Your Choice:**
-> A) I can write formal unit tests now (recommended - verification-driven development)
-> B) You can review the code first via `/code-review src/gameplay/combat/damage_calculator.gd`
+> A) I can write formal Automation Tests now (recommended — verification-driven development)
+> B) You can review the code first via `/code-review Source/MyGame/Combat/DamageCalculator.cpp`
 > C) Skip tests for now and integrate into actual combat
 >
 > What would you like?
@@ -216,53 +266,67 @@
 ## Turn 9: User Requests Tests
 
 **User:**
-> A - write unit tests. Cover all the edge cases.
+> A — write Automation Tests. Cover all the edge cases.
 
 ## Turn 10: Agent Writes Tests and Completes
 
 **Agent:**
-> Unit tests created: `tests/combat/test_damage_calculator.gd`
+> Automation Tests created: `Source/MyGameTests/Private/Combat/DamageCalculatorTest.cpp`
 >
-> **Test Coverage (8 tests):**
+> **Test Coverage (8 tests, all under `MyGame.Combat.Damage.*`):**
 > ```
-> ✓ test_damage_basic_calculation() - Verify formula with known values
-> ✓ test_damage_with_crit() - Critical hits double damage
-> ✓ test_damage_with_defense() - Defense reduces damage correctly
-> ✓ test_damage_type_effectiveness() - Type modifiers apply
-> ✓ test_damage_min_clamp() - Never goes below 1
-> ✓ test_damage_attack_stat_clamp() - Attack stat clamped to 0-100
-> ✓ test_damage_missing_type_combo() - Defaults to 1.0 if not in config
-> ✓ test_damage_rounding() - Verifies floor() behavior
+> ✓ FCalculateDamage_BasicTest                  — Verify formula with known values
+> ✓ FCalculateDamage_WithCritTest               — Critical hits double damage
+> ✓ FCalculateDamage_WithDefenseTest            — Defense reduces damage correctly
+> ✓ FCalculateDamage_TypeEffectivenessTest      — DataTable modifiers apply
+> ✓ FCalculateDamage_MinClampTest               — Never goes below 1
+> ✓ FCalculateDamage_AttackStatClampTest        — AttackStat clamped to 0–100
+> ✓ FCalculateDamage_MissingTypeComboTest       — Defaults to 1.0 if not in DataTable
+> ✓ FCalculateDamage_RoundingTest               — Verifies FloorToInt behaviour
 > ```
+>
+> Each uses `IMPLEMENT_SIMPLE_AUTOMATION_TEST(...)` and asserts via `TestEqual`/`TestTrue`. The DataTable
+> tests load a tiny in-memory `UDataTable` constructed in `RunTest` (no editor / asset loading
+> dependency) so the suite runs headlessly.
 >
 > **Test Results:**
 > ```
-> Running tests/combat/test_damage_calculator.gd...
-> ✓ All 8 tests PASSED
-> Execution time: 12ms
+> > UnrealEditor-Cmd MyGame.uproject -ExecCmds="Automation RunTests MyGame.Combat.Damage; Quit" -nullrhi -unattended
+>
+> ...
+> Test Completed. Result={Success}  MyGame.Combat.Damage.Basic
+> Test Completed. Result={Success}  MyGame.Combat.Damage.WithCrit
+> Test Completed. Result={Success}  MyGame.Combat.Damage.WithDefense
+> Test Completed. Result={Success}  MyGame.Combat.Damage.TypeEffectiveness
+> Test Completed. Result={Success}  MyGame.Combat.Damage.MinClamp
+> Test Completed. Result={Success}  MyGame.Combat.Damage.AttackStatClamp
+> Test Completed. Result={Success}  MyGame.Combat.Damage.MissingTypeCombo
+> Test Completed. Result={Success}  MyGame.Combat.Damage.Rounding
+> All 8 tests passed.
+> Total time: 0.34s
 > ```
 >
 > **Code Review Self-Check:**
-> - ✅ All tests follow `test_[system]_[scenario]_[expected]` naming
-> - ✅ Arrange/Act/Assert structure used
-> - ✅ No external state dependencies
-> - ✅ Each test is independent and can run in any order
+> - ✅ Test category follows `MyGame.<System>.<Feature>` convention
+> - ✅ Each test is `IMPLEMENT_SIMPLE_AUTOMATION_TEST` (stateless, no editor dependency)
+> - ✅ Each test constructs its own DataTable fixture — no shared state
+> - ✅ Tests run headlessly (`-nullrhi`)
 >
 > **System is ready for integration!**
 >
 > Files you can now commit:
 > ```bash
-> git add src/gameplay/combat/*.gd
-> git add assets/data/combat_damage.json
+> git add Source/MyGame/Combat/
+> git add Content/Game/Combat/
 > git add design/gdd/health-system.md
-> git add tests/combat/test_damage_calculator.gd
+> git add Source/MyGameTests/Private/Combat/DamageCalculatorTest.cpp
 > git commit -m "Implement damage calculation system per design/gdd/combat-system.md"
 > ```
 >
 > The `validate-commit` hook will check:
 > - ✅ Design doc referenced in message
-> - ✅ JSON validity
-> - ✅ No hardcoded values (already fixed)
+> - ✅ DataTable assets present (binary; tracked via Git LFS per `.gitattributes`)
+> - ✅ No hardcoded magic numbers in committed C++
 >
 > Ready to commit?
 
@@ -271,26 +335,26 @@
 ## Session Summary
 
 **What Worked Well:**
-- Agent read design doc first, identified 7 ambiguities upfront
-- Didn't assume or guess - asked for clarification on every unclear point
-- Proposed full architecture for user approval before writing code
-- Incorporated user's type safety feedback immediately
-- Rules caught issues automatically and agent fixed them transparently
-- Tests written proactively following verification-driven development
+- Agent read design doc first, identified 8 ambiguities upfront (including the "should we use GAS?" architectural question)
+- Didn't assume or guess — asked for clarification on every unclear point
+- Proposed full architecture (with Unreal-idiomatic class types) for user approval before writing code
+- Incorporated user's struct-based stats feedback immediately
+- Rules caught issues automatically (hardcoded multiplier, debug log) and agent fixed them transparently
+- Tests written proactively as Unreal Automation Tests, runnable headlessly in CI
 - Agent offered next-step options rather than assuming what user wants
 
 **Key Collaborative Moments:**
-- Turn 2: Agent identified 7 spec gaps and asked rather than guessing
-- Turn 4: Full architecture proposal shown before implementation
-- Turn 5: User requested type safety, agent adapted
-- Turn 8: Agent transparently reported rule violations and fixes
-- Turn 10: Agent verified all acceptance criteria with tests
+- Turn 2: Agent identified 8 spec gaps and asked rather than guessing — including the "GAS now or later?" decision that would have been costly to defer
+- Turn 4: Full architecture proposal (file list + skeleton classes) shown before implementation
+- Turn 5: User requested tighter typing + editor exposure, agent adapted
+- Turn 8: Agent transparently reported rule violations and fixes, plus listen-server PIE replication check
+- Turn 10: Agent verified all acceptance criteria with headless Automation Tests
 
 **Files Created:**
-- 4 source files (damage_calculator, health_component, weapon, character_stats)
-- 1 config file (combat_damage.json)
+- 4 source modules (DamageCalculator, HealthComponent, WeaponDataAsset, CharacterStats struct)
+- 2 DataTable assets (DT_TypeEffectiveness, DT_CombatTuning) — designer-tunable
 - 1 design doc (health-system.md)
-- 1 test file (test_damage_calculator.gd)
+- 1 test file (DamageCalculatorTest.cpp, 8 Automation Tests)
 
 **Context Usage:** ~25% (focused implementation task)
-**User Satisfaction:** High - spec ambiguities resolved early, no rework needed
+**User Satisfaction:** High — spec ambiguities resolved early, no rework needed

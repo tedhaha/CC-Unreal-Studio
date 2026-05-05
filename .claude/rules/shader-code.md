@@ -1,44 +1,46 @@
 ---
 paths:
   - "assets/shaders/**"
+  - "**/*.usf"
+  - "**/*.ush"
 ---
 
-# Shader Code Standards
+# Unreal Shader & Material Code Standards
 
-All shader files in `assets/shaders/` must follow these standards to maintain
-visual quality, performance, and cross-platform compatibility.
+All Unreal shader/material files (`.usf`, `.ush`, custom HLSL nodes, and
+shipped Material/MaterialInstance assets) must follow these standards to
+maintain visual quality, performance, and platform compatibility.
 
 ## Naming Conventions
-- File naming: `[type]_[category]_[name].[ext]`
-  - `spatial_env_water.gdshader` (Godot)
-  - `SG_Env_Water` (Unity Shader Graph)
-  - `M_Env_Water` (Unreal Material)
+- Materials: `M_<Domain>_<Name>` — e.g. `M_Env_Water`, `M_Char_Skin`
+- Material Instances: `MI_<ParentName>_<Variant>` — e.g. `MI_Env_Water_River`
+- Material Functions: `MF_<Purpose>` — e.g. `MF_TriplanarSampling`
+- Custom HLSL include files: `Common<Topic>.ush`, `<Feature>.usf`
 - Use descriptive names that indicate the material purpose
-- Prefix with shader type: `spatial_`, `canvas_`, `particles_`, `post_`
+- Group related materials in `Content/.../Materials/` subfolders by domain (Env, Char, FX, UI)
 
 ## Code Quality
-- All uniforms/parameters must have descriptive names and appropriate hints
-- Group related parameters (Godot: `group_uniforms`, Unity: `[Header]`, Unreal: Category)
-- Comment non-obvious calculations (especially math-heavy sections)
-- No magic numbers — use named constants or documented uniform values
-- Include authorship and purpose comment at the top of each shader file
+- All material parameters must have descriptive names and `Group` / `SortPriority` set
+- Comment non-obvious calculations in custom HLSL (especially math-heavy sections)
+- No magic numbers — use named scalar parameters or documented constants
+- Include authorship and purpose comment at the top of each `.usf` / `.ush` file
+- Prefer Material Functions over copy-pasted node graphs
 
 ## Performance Requirements
-- Document the target platform and complexity budget for each shader
-- Use appropriate precision: `half`/`mediump` on mobile where full precision isn't needed
-- Minimize texture samples in fragment shaders
-- Avoid dynamic branching in fragment shaders — use `step()`, `mix()`, `smoothstep()`
-- No texture reads inside loops
-- Two-pass approach for blur effects (horizontal then vertical)
+- Document the target platform and instruction-count budget for each material
+- Watch the material editor's stats panel: instruction count, sampler count, texture lookups
+- Avoid dynamic branching where possible — prefer `step()`, `lerp()`, `smoothstep()`
+- No texture samples inside loops
+- Use `Static Switch` parameters to compile out unused features per Material Instance
+- Use Substrate when targeting UE 5.7+ for layered materials (better perf than legacy layered)
 
-## Cross-Platform
-- Test shaders on minimum spec target hardware
-- Provide fallback/simplified versions for lower quality tiers
-- Document which render pipeline the shader targets (Forward/Deferred, URP/HDRP, Forward+/Mobile/Compatibility)
-- Do not mix shaders from different render pipelines in the same directory
+## Render Pipeline / Platform
+- Test materials on minimum spec target hardware
+- Provide simplified Material Instances for lower scalability tiers (Low/Medium/High/Epic)
+- Document which feature level / shader model is required (SM5, SM6, Mobile, etc.)
+- Mark mobile-incompatible nodes explicitly when shipping for mobile
 
 ## Variant Management
-- Minimize shader variants — each variant is a separate compiled shader
-- Document all keywords/variants and their purpose
-- Use feature stripping where possible to reduce build size
-- Log and monitor total variant count per shader
+- Minimize Static Switch permutations — each combination is a separate compiled shader
+- Document all `Static Switch Parameter` and `Static Component Mask` keywords and their purpose
+- Monitor PSO (Pipeline State Object) cache size and shader compile times per material

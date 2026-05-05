@@ -19,19 +19,26 @@ paths:
 
 **Correct** (zero-alloc hot path):
 
-```gdscript
-# Pre-allocated array reused each frame
-var _nearby_cache: Array[Node3D] = []
+```cpp
+// Pre-allocated buffer reused each frame; cleared, not reallocated.
+TArray<AActor*, TInlineAllocator<32>> NearbyCache;
 
-func _physics_process(delta: float) -> void:
-    _nearby_cache.clear()  # Reuse, don't reallocate
-    _spatial_grid.query_radius(position, radius, _nearby_cache)
+void AMyActor::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    NearbyCache.Reset();                               // Reuse storage
+    SpatialGrid->QueryRadius(GetActorLocation(), Radius, /*Out*/ NearbyCache);
+}
 ```
 
 **Incorrect** (allocating in hot path):
 
-```gdscript
-func _physics_process(delta: float) -> void:
-    var nearby: Array[Node3D] = []  # VIOLATION: allocates every frame
-    nearby = get_tree().get_nodes_in_group("enemies")  # VIOLATION: tree query every frame
+```cpp
+void AMyActor::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    TArray<AActor*> Nearby;                            // VIOLATION: heap-allocates every frame
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(),  // VIOLATION: O(n) global iteration every frame
+                                          AEnemy::StaticClass(), Nearby);
+}
 ```

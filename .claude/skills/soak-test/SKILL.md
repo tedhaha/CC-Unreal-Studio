@@ -86,26 +86,19 @@ Phase 4.
 
 ### Memory / Stability observation items (if focus = memory or all)
 
-Engine-specific monitoring guidance:
+Unreal Engine 5 monitoring guidance:
 
-**Godot 4:**
-- Open Debugger → Monitors tab; track `Memory → Static Memory` and
-  `Object Count → Objects` across checkpoints
-- Record: Static Memory (KB), Object Count, Orphan Nodes count
-- Alert threshold: Memory growth > 20% from T+0 after the first 15 minutes
-  (some growth on load is expected; sustained growth indicates a leak)
-- Note: `Performance.get_monitor(Performance.MEMORY_STATIC)` returns bytes
-  in Godot 4.6
-
-**Unity:**
-- Open Memory Profiler (Window → Analysis → Memory Profiler)
-- Record: Total Reserved Memory (MB), GC Allocated (MB), Object Count at each checkpoint
-- Alert threshold: GC Allocated growing monotonically across 3+ checkpoints
-
-**Unreal Engine:**
-- Use `stat memory` console command at each checkpoint
-- Record: Physical Memory Used (MB), Physical Memory Available
-- Alert threshold: Physical Memory Used growth > 50MB over the full soak
+- At each checkpoint, run these console commands:
+  - `stat memory` — overall physical / virtual / GPU memory totals
+  - `MemReport -Full` (writes a detailed report to `Saved/Profiling/MemReports/`)
+  - `obj list class=<SuspectClass>` — count instances of any UObject class you suspect of leaking
+  - `stat unit`, `stat unitGraph` — frame timing budget per thread
+- Record per checkpoint: Physical Memory Used (MB), Available (MB), GPU Memory (MB), Allocated UObject count for any watched class
+- Alert thresholds:
+  - Physical Memory Used growth > 50 MB across the full soak
+  - GPU Memory growth > 25 MB across the full soak
+  - Any UObject class growing monotonically across 3+ checkpoints (likely leak)
+  - Frame time creeping up by > 1 ms across the full soak (creeping perf debt)
 
 ### Stability observation items (if focus = stability or all)
 
@@ -146,10 +139,7 @@ Before starting the soak:
 
 - [ ] Game is running from a **fresh launch** (not resumed from a prior session)
 - [ ] All background applications closed (minimise OS memory interference)
-- [ ] Performance monitoring tool open and recording:
-  - **Godot**: Debugger → Monitors tab → Memory section visible
-  - **Unity**: Memory Profiler window open
-  - **Unreal**: `stat memory` ready in console
+- [ ] Performance monitoring ready: `stat memory`, `stat unit`, `stat unitGraph` toggled on; Unreal Insights attached if available
 - [ ] Soak target confirmed: [session design intent from game concept]
 - [ ] Prior known issues to watch for: [from most recent playtest / qa-plan]
 

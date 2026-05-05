@@ -215,17 +215,14 @@ qa-tester, writer, world-builder
 
 ### `engine`
 
-**Agents**: godot-specialist, godot-gdscript-specialist, godot-csharp-specialist,
-godot-shader-specialist, godot-gdextension-specialist, unity-specialist, unity-ui-specialist,
-unity-shader-specialist, unity-dots-specialist, unity-addressables-specialist,
-unreal-specialist, ue-blueprint-specialist, ue-gas-specialist, ue-umg-specialist,
-ue-replication-specialist
+**Agents**: unreal-specialist, ue-blueprint-specialist, ue-gas-specialist,
+ue-umg-specialist, ue-replication-specialist
 
 | Metric | PASS criteria |
 |---|---|
-| **E1 — Version-aware** | References engine version from `docs/engine-reference/` before suggesting API calls; flags post-cutoff risk |
-| **E2 — File routing** | Routes file types to the correct sub-specialist (e.g., `.gdshader` → godot-shader-specialist, not godot-gdscript-specialist) |
-| **E3 — Engine-specific patterns** | Enforces engine-specific idioms (e.g., GDScript static typing, C# attribute exports, Blueprint function libraries) |
+| **E1 — Version-aware** | References pinned UE version from `docs/engine-reference/unreal/` before suggesting API calls; flags post-cutoff risk |
+| **E2 — File routing** | Routes file types to the correct sub-specialist (e.g., GAS assets `GA_*` / `GE_*` / `AS_*` → ue-gas-specialist, `WBP_*` → ue-umg-specialist, replicated systems → ue-replication-specialist) |
+| **E3 — Unreal-specific patterns** | Enforces UE5 idioms (BP/C++ boundary, `UPROPERTY` exposure, GAS attribute rules, server-authoritative replication, CommonUI input layers) |
 
 ### `qa`
 

@@ -39,9 +39,8 @@ if [ -n "$CODE_FILES" ]; then
         fi
 
         # Run language-specific linter (uncomment appropriate line)
-        # For GDScript: gdlint "$file" || EXIT_CODE=1
-        # For C#: dotnet format --check "$file" || EXIT_CODE=1
-        # For C++: clang-format --dry-run -Werror "$file" || EXIT_CODE=1
+        # For C++ (Unreal source): clang-format --dry-run -Werror "$file" || EXIT_CODE=1
+        # For C# (Build.cs / Target.cs): dotnet format --check "$file" || EXIT_CODE=1
     done
 
     # Run unit tests for modified systems

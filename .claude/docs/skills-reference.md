@@ -9,7 +9,7 @@
 | `/start` | First-time onboarding — asks where you are, then guides you to the right workflow |
 | `/help` | Context-aware "what do I do next?" — reads current stage and surfaces the required next step |
 | `/project-stage-detect` | Full project audit — detect phase, identify existence gaps, recommend next steps |
-| `/setup-engine` | Configure engine + version, detect knowledge gaps, populate version-aware reference docs |
+| `/setup-engine refresh` | Refresh `docs/engine-reference/unreal/` reference docs (engine pinned to UE 5.7) |
 | `/adopt` | Brownfield format audit — checks internal structure of existing GDDs/ADRs/stories, produces migration plan |
 
 ## Game Design
@@ -75,8 +75,8 @@
 | `/smoke-check` | Run critical path smoke test gate before QA hand-off |
 | `/soak-test` | Generate a soak test protocol for extended play sessions |
 | `/regression-suite` | Map test coverage to GDD critical paths, identify fixed bugs without regression tests |
-| `/test-setup` | Scaffold the test framework and CI/CD pipeline for the project's engine |
-| `/test-helpers` | Generate engine-specific test helper libraries for the test suite |
+| `/test-setup` | Scaffold Unreal Automation Testing + CI/CD pipeline for the project |
+| `/test-helpers` | Generate Unreal-specific test helper libraries for the test suite |
 | `/test-evidence-review` | Quality review of test files and manual evidence documents |
 | `/test-flakiness` | Detect non-deterministic (flaky) tests from CI run logs |
 | `/skill-test` | Validate skill files for structural compliance and behavioral correctness |

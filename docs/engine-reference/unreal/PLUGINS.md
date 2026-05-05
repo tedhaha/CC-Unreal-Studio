@@ -172,9 +172,26 @@ These are NOT part of the core engine but are commonly used for specific game ty
 
 ---
 
-### ❌ Old Replication Graph
-- **Deprecated:** Replaced by Iris (UE 5.1+)
-- **Status:** Use Iris for modern networking
+### 🟡 Replication Graph vs Iris
+- **Status (UE 5.7)**: Iris is **Beta**, not production-ready (corrected 2026-05-06 via sonnet agent verification — `VERSION.md` Verification Notes)
+- **Recommendation**: Continue using Replication Graph for shipping projects.
+  Iris is worth prototyping but should not be the production choice in 5.7
+- **Iris introduction version**: UNVERIFIED (likely 5.1+; no primary source confirmed)
+- **Official:** https://dev.epicgames.com/documentation/en-us/unreal-engine/introduction-to-iris-in-unreal-engine
+
+---
+
+### ⚠️ Mover Plugin (Experimental in 5.7)
+- **Purpose:** Eventual replacement for `UCharacterMovementComponent` (CMC)
+- **Status:** Experimental — NOT yet ready for production use
+- **Recommendation:** Stay on CMC for shipping projects; prototypes only
+
+---
+
+### ⚠️ Nanite Foliage (Experimental in 5.7)
+- **Purpose:** Nanite-based vegetation rendering
+- **Status:** NEW experimental feature in 5.7
+- **Recommendation:** Visual prototyping; expect API changes in 5.8+
 
 ---
 

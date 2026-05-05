@@ -1,42 +1,56 @@
 ---
 paths:
   - "tests/**"
+  - "Source/**/*Tests/**"
 ---
 
-# Test Standards
+# Test Standards (Unreal Automation Tests)
 
-- Test naming: `test_[system]_[scenario]_[expected_result]` pattern
-- Every test must have a clear arrange/act/assert structure
-- Unit tests must not depend on external state (filesystem, network, database)
-- Integration tests must clean up after themselves
+- Test class naming: `F<System><Feature>Test` (e.g. `FHealthTakeDamageTest`)
+- Test category naming: `MyGame.<System>.<Feature>` (e.g. `MyGame.Health.TakeDamage`)
+- Every test must have a clear Arrange / Act / Assert structure
+- Unit tests must not depend on external state (filesystem, network, editor assets)
+- Functional tests must clean up after themselves (destroy spawned actors, remove worlds via `World->DestroyWorld(false)`)
 - Performance tests must specify acceptable thresholds and fail if exceeded
-- Test data must be defined in the test or in dedicated fixtures, never shared mutable state
+- Test data must be defined in the test (in-memory) or in dedicated fixture
+  classes — never shared mutable state across tests
 - Mock external dependencies — tests should be fast and deterministic
 - Every bug fix must have a regression test that would have caught the original bug
 
 ## Examples
 
-**Correct** (proper naming + Arrange/Act/Assert):
+**Correct** (proper naming + Arrange / Act / Assert):
 
-```gdscript
-func test_health_system_take_damage_reduces_health() -> void:
-    # Arrange
-    var health := HealthComponent.new()
-    health.max_health = 100
-    health.current_health = 100
+```cpp
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FHealthTakeDamageReducesHealthTest,
+    "MyGame.Health.TakeDamageReducesHealth",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-    # Act
-    health.take_damage(25)
+bool FHealthTakeDamageReducesHealthTest::RunTest(const FString& Parameters)
+{
+    // Arrange
+    UHealthComponent* Health = NewObject<UHealthComponent>();
+    Health->MaxHP = 100;
+    Health->CurrentHP = 100;
 
-    # Assert
-    assert_eq(health.current_health, 75)
+    // Act
+    Health->TakeDamage(25, /*Instigator=*/nullptr);
+
+    // Assert
+    TestEqual(TEXT("CurrentHP after 25 damage"), Health->CurrentHP, 75);
+    return true;
+}
 ```
 
 **Incorrect**:
 
-```gdscript
-func test1() -> void:  # VIOLATION: no descriptive name
-    var h := HealthComponent.new()
-    h.take_damage(25)  # VIOLATION: no arrange step, no clear assert
-    assert_true(h.current_health < 100)  # VIOLATION: imprecise assertion
+```cpp
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FTest1, "MyGame.X", EAutomationTestFlags::GameFilter)
+bool FTest1::RunTest(const FString& Parameters)               // VIOLATION: no descriptive name / category
+{
+    UHealthComponent* H = NewObject<UHealthComponent>();
+    H->TakeDamage(25, nullptr);                                // VIOLATION: no arrange step, no clear assert
+    return TestTrue(TEXT("hp"), H->CurrentHP < 100);           // VIOLATION: imprecise assertion (passes even if HP is -50)
+}
 ```

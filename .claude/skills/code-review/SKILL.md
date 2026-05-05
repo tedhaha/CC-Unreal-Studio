@@ -85,16 +85,18 @@ Identify the system category (engine, gameplay, AI, networking, UI, tools) and e
 
 Spawn all applicable specialists simultaneously via Task — do not wait for one before starting the next.
 
-### Engine Specialists
+### Unreal Engine Specialists
 
-If an engine is configured, determine which specialist applies to each file and spawn in parallel:
+Determine which UE5 specialist applies to each file and spawn in parallel:
 
-- Primary language files (`.gd`, `.cs`, `.cpp`) → Language/Code Specialist
-- Shader files (`.gdshader`, `.hlsl`, shader graph) → Shader Specialist
-- UI screen/widget code → UI Specialist
-- Cross-cutting or unclear → Primary Specialist
+- C++ source (`.h` / `.cpp`) → `unreal-specialist` (or `ue-replication-specialist` if networking-heavy)
+- Blueprint assets (`BP_*.uasset`) → `ue-blueprint-specialist`
+- UMG widget Blueprints (`WBP_*.uasset`) → `ue-umg-specialist`
+- Shader / Material files (`.usf`, `.ush`, `M_*`, `MF_*`) → `technical-artist`
+- GAS assets (`GA_*`, `GE_*`, `AS_*`) or attribute-set / ability code → `ue-gas-specialist`
+- Cross-cutting or unclear → `unreal-specialist`
 
-Also spawn the **Primary Specialist** for any file touching engine architecture (scene structure, node hierarchy, lifecycle hooks).
+Also spawn `unreal-specialist` for any file touching engine architecture (Game Mode, Game Instance, World Subsystem, lifecycle hooks).
 
 ### QA Testability Review
 

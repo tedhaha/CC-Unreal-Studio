@@ -28,13 +28,13 @@
 - Does NOT render a final verdict without knowing project context — asks clarifying questions if context is absent
 - Output is structured (criteria table or bullet list), not a freeform opinion
 
-### Case 2: Out-of-domain request — Unity C# code
+### Case 2: Out-of-domain request — wrong-engine code
 **Input**: "Write me a C# MonoBehaviour that handles player health and fires a Unity event on death."
 **Expected behavior**:
 - Does not produce Unity C# code
-- States clearly: "This project uses Unreal Engine; the Unity equivalent would be an Actor Component in UE C++ or a Blueprint Actor Component"
+- States clearly: "This fork is Unreal Engine 5 only. The UE equivalent would be a `UActorComponent` in C++ (or a Blueprint Actor Component) that broadcasts a Multicast Delegate on death."
 - Optionally offers to provide the UE equivalent if requested
-- Does not redirect to a Unity specialist (none exists in the framework)
+- Does not pretend a Unity specialist exists (the upstream multi-engine template has them; this fork removed them)
 
 ### Case 3: Domain boundary — UE5.4 API requirement
 **Input**: "I need to use the new Motion Matching API introduced in UE5.4."
@@ -67,7 +67,7 @@
 ## Protocol Compliance
 
 - [ ] Stays within declared domain (Unreal patterns, Blueprint/C++, UE subsystems)
-- [ ] Redirects Unity or other-engine requests without producing wrong-engine code
+- [ ] Redirects wrong-engine requests (Unity, Godot, custom) without producing wrong-engine code
 - [ ] Returns structured findings (criteria tables, decision trees, migration plans) rather than freeform opinions
 - [ ] Flags version uncertainty explicitly before producing API suggestions
 - [ ] Coordinates with lead-programmer for architecture-scale refactors rather than deciding unilaterally

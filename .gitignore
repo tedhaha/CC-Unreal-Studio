@@ -35,53 +35,32 @@ dist/
 *.dylib
 *.app
 
-# === Engine: Godot ===
-.godot/
-*.translation
-export_presets.cfg
-# Uncomment if using Godot:
-# *.import
-
-# === Engine: Unity ===
-[Ll]ibrary/
-[Tt]emp/
-[Oo]bj/
-[Bb]uild/
-[Bb]uilds/
-[Ll]ogs/
-[Uu]ser[Ss]ettings/
-*.csproj
-*.unityproj
-*.sln
-*.suo
-*.tmp
-*.user
-*.userprefs
-*.pidb
-*.booproj
-*.svd
-*.pdb
-*.mdb
-*.opendb
-*.VC.db
-crashlytics-buildid.txt
-sysinfo.txt
-# Uncomment if using Unity:
-# [Aa]ssets/[Aa]sset[Ss]tore[Tt]ools/
-
-# === Engine: Unreal ===
+# === Engine: Unreal Engine 5 ===
 Binaries/
+Build/
 DerivedDataCache/
 Intermediate/
 Saved/
+.vsconfig
+*.VC.db
 *.VC.opendb
 *.opensdf
 *.sdf
 *.cachefile
-*.VC.db
-# Uncomment if using Unreal:
-# *.uasset
-# *.umap
+*.suo
+*.user
+*.sln
+# Generated project files (regenerate with GenerateProjectFiles)
+*.xcodeproj
+*.xcworkspace
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+# Crash reports
+CrashReportClient.ini
+*.dmp
+# UE binary assets are tracked via Git LFS — do NOT ignore them by default.
+# If you need to exclude generated/derived assets, add narrow rules below.
 
 # === Compiled Shaders ===
 *.spv

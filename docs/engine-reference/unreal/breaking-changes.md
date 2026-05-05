@@ -1,6 +1,6 @@
 # Unreal Engine 5.7 — Breaking Changes
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-05-06 (partial — see `VERSION.md` Verification Notes)
 
 This document tracks breaking API changes and behavioral differences between Unreal Engine 5.3
 (likely in model training) and Unreal Engine 5.7 (current version). Organized by risk level.
@@ -8,7 +8,7 @@ This document tracks breaking API changes and behavioral differences between Unr
 ## HIGH RISK — Will Break Existing Code
 
 ### Substrate Material System (Production-Ready in 5.7)
-**Versions:** UE 5.5+ (experimental), 5.7 (production-ready)
+**Versions:** UE 5.2+ (introduced as experimental — confirmed via Wikipedia), later iterated through 5.3-5.6, **5.7 is the version commonly referenced as production-ready** (this last claim remains unverified against Epic's official docs as of the 2026-05-06 refresh)
 
 Substrate replaces the legacy material system with a modular, physically accurate framework.
 

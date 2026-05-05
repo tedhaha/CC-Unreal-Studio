@@ -19,13 +19,15 @@
 
 ## Test Cases
 
-### Case 1: In-domain request — CI setup for a Godot project
-**Input**: "Set up a CI pipeline for our Godot 4 project. It should run tests on every push to main and every pull request, and fail the build if tests fail."
+### Case 1: In-domain request — CI setup for the Unreal project
+**Input**: "Set up a CI pipeline for our Unreal Engine 5 project. It should run Automation Tests on every push to main and every pull request, and fail the build if tests fail."
 **Expected behavior**:
-- Produces a GitHub Actions workflow YAML (`.github/workflows/ci.yml` or equivalent)
-- Uses the Godot headless test runner command from `coding-standards.md`: `godot --headless --script tests/gdunit4_runner.gd`
+- Produces a GitHub Actions workflow YAML (`.github/workflows/tests.yml` or equivalent)
+- Uses the Unreal headless test runner command from `coding-standards.md`:
+  `UnrealEditor-Cmd <ProjectPath>.uproject -ExecCmds="Automation RunTests MyGame.; Quit" -nullrhi -unattended -nopause -log`
 - Configures trigger on `push` to main and `pull_request`
 - Sets the job to fail (`exit 1` or non-zero exit) when tests fail — does NOT configure the pipeline to continue on test failure
+- Notes that UE CI requires a self-hosted runner with the editor installed (or an Unreal container image) and the `UE_EDITOR_PATH` env var configured
 - References the project's coding standards CI rules in the output or comments
 
 ### Case 2: Out-of-domain request — game networking implementation
@@ -36,12 +38,12 @@
 - Does not conflate CI pipeline configuration with in-game network architecture
 
 ### Case 3: Build failure diagnosis
-**Input**: "Our CI pipeline is failing on the merge step. The error is: 'Asset import failed: texture compression format unsupported in headless mode.'"
+**Input**: "Our CI pipeline is failing on the cook step. The error is: `LogTextureCompressor: Error: Compression format ASTC requires GPU support not present in headless mode`."
 **Expected behavior**:
-- Diagnoses the root cause: headless CI environment does not support GPU-dependent texture compression
-- Proposes a concrete fix: either pre-import assets locally before CI runs (commit .import files to VCS), configure Godot's import settings to use a CPU-compatible compression format in CI, or use a Docker image with GPU simulation if available
+- Diagnoses the root cause: headless CI environment does not support GPU-dependent texture compression formats
+- Proposes a concrete fix: either pre-cook the affected platforms on a GPU-equipped runner, switch the affected texture group to a CPU-compressible format (DXT/BC) for CI builds via a Device Profile override, or use a runner with a virtual GPU
 - Does NOT declare the pipeline unfixable — provides at least one actionable path
-- Notes any tradeoffs (committing .import files increases repo size; CPU compression may differ from GPU output)
+- Notes any tradeoffs (CPU formats may differ visually from GPU output; per-runner cook profile increases pipeline complexity)
 
 ### Case 4: Branching strategy conflict
 **Input**: "Half the team wants to use GitFlow with long-lived feature branches. The other half wants trunk-based development. How should we set this up?"
@@ -57,8 +59,8 @@
 **Input**: "Set up our CI build matrix so we get a build artifact for each target platform on every release branch push."
 **Expected behavior**:
 - Produces a build matrix configuration with three platform entries: Windows, Linux, Switch, PS5
-- Applies platform-appropriate build steps: PC uses standard Godot export templates; Switch and PS5 require platform-specific export templates (notes that console templates require licensed SDK access and are not publicly distributed)
-- Does NOT assume all platforms can use the same build runner — flags that console builds may require self-hosted runners with licensed SDKs
+- Applies platform-appropriate UAT BuildCookRun invocations: PC (Win64, Linux) uses standard UE export; Switch and PS5 require platform-specific Engine source builds + licensed platform extensions (notes that console SDKs are NDA-restricted and not publicly distributed)
+- Does NOT assume all platforms can use the same build runner — flags that console builds require self-hosted runners with licensed SDKs and an Engine source build with the corresponding `Platforms/<Platform>/` extension
 - Organizes artifacts by platform name in the pipeline output
 
 ---
@@ -74,7 +76,7 @@
 ---
 
 ## Coverage Notes
-- Case 1 (Godot CI) references `coding-standards.md` CI rules — verify this file is present and current before running this test
+- Case 1 (Unreal CI) references `coding-standards.md` CI rules — verify this file is present and current before running this test
 - Case 4 (branching strategy) is a convention-enforcement test — agent must know the project convention, not just give neutral advice
 - Case 5 requires that project's target platforms are documented (in `technical-preferences.md` or equivalent)
 - No automated runner; review manually or via `/skill-test`

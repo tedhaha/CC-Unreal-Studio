@@ -34,30 +34,30 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 
 ## Test Cases
 
-### Case 1: Happy Path — Player factory helper generated for Godot/GDScript
+### Case 1: Happy Path — Player factory helper generated for Unreal C++
 
 **Fixture:**
-- `technical-preferences.md` has engine Godot 4, language GDScript
-- `tests/` directory exists (test-setup has been run)
+- `technical-preferences.md` has engine Unreal Engine 5.x, language C++ + Blueprint
+- `Source/<ProjectName>Tests/` test module exists (`/test-setup` has been run)
 - `design/gdd/player.md` exists with defined player properties
-- No existing helpers in `tests/helpers/`
+- No existing helpers under `Source/<ProjectName>Tests/Public/Helpers/`
 
 **Input:** `/test-helpers player-factory`
 
 **Expected behavior:**
-1. Skill reads engine (Godot 4 / GDScript) and player GDD for property context
-2. Skill generates a deterministic `PlayerFactory` helper in GDScript:
-   - `create_player(health: int = 100, speed: float = 200.0)` function
-   - Returns a player node pre-configured to a known state
-   - Uses dependency injection (no singletons)
-3. Skill asks "May I write to `tests/helpers/player_factory.gd`?"
+1. Skill confirms engine (Unreal 5.x) and reads the player GDD for property context
+2. Skill generates a deterministic `PlayerTestFactory` namespace in C++:
+   - `APlayerCharacter* MakePlayer(UWorld* World, float Health = 100.f, float Speed = 600.f)` declaration
+   - Returns a Pawn pre-configured to a known state, spawned into the supplied test world
+   - Uses dependency injection (no Game Instance / Subsystem global state)
+3. Skill asks "May I write to `Source/<ProjectName>Tests/Public/Helpers/PlayerTestFactory.h`?"
 4. File is written on approval; verdict is COMPLETE
 
 **Assertions:**
-- [ ] Generated helper is in GDScript (not C# or Blueprint)
+- [ ] Generated helper is C++ (header + optional .cpp stub) — not Blueprint or another language
 - [ ] Factory function parameters use defaults matching GDD values
-- [ ] Helper uses dependency injection (no Autoload/singleton references)
-- [ ] Filename follows snake_case convention for GDScript
+- [ ] Helper does NOT touch global state (no `GEngine->GameInstance->...` lookups)
+- [ ] Filename follows `PascalCase` convention with `.h` extension
 - [ ] Verdict is COMPLETE
 
 ---
@@ -112,8 +112,8 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 ### Case 4: System Has No GDD — Notes missing design context in helper
 
 **Fixture:**
-- `technical-preferences.md` has Godot 4 / GDScript
-- `tests/` exists
+- `technical-preferences.md` has Unreal Engine 5.x
+- `Source/<ProjectName>Tests/` exists
 - User requests a helper for the "inventory system" but no `design/gdd/inventory.md` exists
 
 **Input:** `/test-helpers inventory-factory`
@@ -121,7 +121,7 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 **Expected behavior:**
 1. Skill looks for `design/gdd/inventory.md` — not found
 2. Skill notes: "No GDD found for inventory — generating helper with placeholder defaults"
-3. Skill generates an `inventory_factory.gd` with generic placeholder values
+3. Skill generates `Source/<ProjectName>Tests/Public/Helpers/InventoryTestFactory.h` with generic placeholder values
    (item_count = 0, max_capacity = 20) and a comment: "# TODO: align defaults
    with inventory GDD when written"
 4. Skill asks "May I write to `tests/helpers/inventory_factory.gd`?"
@@ -169,7 +169,8 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 
 - Mock/stub helper generation (for dependencies like save systems or audio buses)
   follows the same pattern as factory helpers and is not separately tested.
-- Unity C# helper generation (using NSubstitute or custom mocks) follows the
-  same logic as Case 1 with language-appropriate output.
+- BlueprintFunctionLibrary mirrors of the C++ assertion helpers (so Functional
+  Tests authored in Blueprint can call the same checks) follow the same logic
+  as the base helper and are not separately tested.
 - The case where the requested helper type is not recognized is not tested;
   the skill would ask the user to clarify the helper type.

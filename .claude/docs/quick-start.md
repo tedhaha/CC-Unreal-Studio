@@ -2,14 +2,14 @@
 
 ## What Is This?
 
-This is a complete Claude Code agent architecture for game development. It
-organizes 48 specialized AI agents into a studio hierarchy that mirrors
-real game development teams, with defined responsibilities, delegation
-rules, and coordination protocols. It includes engine-specialist agents
-for Godot, Unity, and Unreal — each with dedicated sub-specialists for
-major engine subsystems. All design agents and templates are grounded in
+This is a complete Claude Code agent architecture for **Unreal Engine 5** game
+development. It organizes 39 specialized AI agents into a studio hierarchy
+that mirrors real game development teams, with defined responsibilities,
+delegation rules, and coordination protocols. It includes a dedicated
+`unreal-specialist` lead plus four UE sub-specialists (GAS, Blueprint,
+Replication, UMG/CommonUI). All design agents and templates are grounded in
 established game design theory (MDA Framework, Self-Determination Theory,
-Flow State, Bartle Player Types). Use whichever engine set matches your project.
+Flow State, Bartle Player Types).
 
 ## How to Use
 
@@ -54,19 +54,10 @@ Ask yourself: "What department would handle this in a real studio?"
 | Review code for security issues | `security-engineer` |
 | Check accessibility compliance | `accessibility-specialist` |
 | Get Unreal Engine advice | `unreal-specialist` |
-| Get Unity advice | `unity-specialist` |
-| Get Godot advice | `godot-specialist` |
 | Design GAS abilities/effects | `ue-gas-specialist` |
 | Define BP/C++ boundaries | `ue-blueprint-specialist` |
 | Implement UE replication | `ue-replication-specialist` |
 | Build UMG/CommonUI widgets | `ue-umg-specialist` |
-| Design DOTS/ECS architecture | `unity-dots-specialist` |
-| Write Unity shaders/VFX | `unity-shader-specialist` |
-| Manage Addressable assets | `unity-addressables-specialist` |
-| Build UI Toolkit/UGUI screens | `unity-ui-specialist` |
-| Write idiomatic GDScript | `godot-gdscript-specialist` |
-| Create Godot shaders | `godot-shader-specialist` |
-| Build GDExtension modules | `godot-gdextension-specialist` |
 | Plan live events and seasons | `live-ops-designer` |
 | Write patch notes for players | `community-manager` |
 | Brainstorm a new game idea | Use `/brainstorm` skill |
@@ -78,7 +69,7 @@ Ask yourself: "What department would handle this in a real studio?"
 | `/start` | First-time onboarding — asks where you are, guides you to the right workflow |
 | `/help` | Context-aware "what do I do next?" — reads your current phase and artifacts |
 | `/project-stage-detect` | Analyze project state, detect stage, identify gaps |
-| `/setup-engine` | Configure engine + version, populate reference docs |
+| `/setup-engine refresh` | Refresh `docs/engine-reference/unreal/` (engine is already pinned to UE 5.7) |
 | `/adopt` | Brownfield audit and migration plan for existing projects |
 | `/brainstorm` | Guided game concept ideation from scratch |
 | `/map-systems` | Decompose concept into systems, map dependencies, guide per-system GDDs |
@@ -228,8 +219,9 @@ If you already know what you need, jump directly to the relevant path:
 
 If you already have a game concept and engine choice:
 
-1. **Set up the engine** — Run `/setup-engine [engine] [version]`
-   (e.g., `/setup-engine godot 4.6`) — also creates technical preferences
+1. **Refresh engine reference docs** — Run `/setup-engine refresh` (engine is
+   already pinned to Unreal 5.x; `/setup-engine upgrade <old> <new>` if you
+   are jumping UE versions)
 2. **Write the Game Pillars** — delegate to `creative-director`
 3. **Decompose into systems** — Run `/map-systems` to enumerate systems and dependencies
 4. **Design each system** — Run `/design-system [system-name]` for GDDs in dependency order

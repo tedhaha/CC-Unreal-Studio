@@ -151,11 +151,13 @@ to get the configured primary specialist. Spawn them alongside the primary agent
 when the story involves engine-specific APIs, patterns, or the ADR has HIGH
 engine risk.
 
-| Engine | Specialist agents available |
-|--------|----------------------------|
-| Godot 4 | `godot-specialist`, `godot-gdscript-specialist`, `godot-shader-specialist` |
-| Unity | `unity-specialist`, `unity-ui-specialist`, `unity-shader-specialist` |
-| Unreal Engine | `unreal-specialist`, `ue-gas-specialist`, `ue-blueprint-specialist`, `ue-umg-specialist`, `ue-replication-specialist` |
+| Subsystem | Specialist agent |
+|-----------|------------------|
+| General UE5 architecture / Blueprint vs C++ | `unreal-specialist` |
+| Gameplay Ability System (abilities, effects, attributes, tags, prediction) | `ue-gas-specialist` |
+| Blueprint architecture (BP/C++ boundary, graph standards, BP optimization) | `ue-blueprint-specialist` |
+| Networking / replication (RPCs, prediction, relevancy, bandwidth) | `ue-replication-specialist` |
+| UMG / CommonUI (widget hierarchy, data binding, input routing, UI perf) | `ue-umg-specialist` |
 
 **When engine risk is HIGH** (from the ADR or VERSION.md): always spawn the engine
 specialist, even for non-engine-facing stories. High risk means the ADR records

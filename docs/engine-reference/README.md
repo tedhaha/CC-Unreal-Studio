@@ -1,30 +1,31 @@
 # Engine Reference Documentation
 
-This directory contains curated, version-pinned documentation snapshots for the
-game engine(s) used in this project. These files exist because **LLM knowledge
-has a cutoff date** and game engines update frequently.
+This directory contains curated, version-pinned documentation snapshots for
+**Unreal Engine 5**, the engine used in this project. These files exist because
+**LLM knowledge has a cutoff date** and Unreal ships major updates regularly.
 
 ## Why This Exists
 
-Claude's training data has a knowledge cutoff (currently May 2025). Game engines
-like Godot, Unity, and Unreal ship updates that introduce breaking API changes,
-new features, and deprecated patterns. Without these reference files, agents will
-suggest outdated code.
+Claude's training data has a knowledge cutoff (currently May 2025). Unreal
+Engine ships major updates (5.4 → 5.5 → 5.6 → 5.7 …) that introduce breaking
+API changes, new features (Megalights, Substrate, production-ready PCG), and
+deprecated patterns. Without these reference files, agents will suggest
+outdated code.
 
 ## Structure
 
-Each engine gets its own directory:
-
 ```
-<engine>/
-├── VERSION.md              # Pinned version, verification date, knowledge gap window
-├── breaking-changes.md     # API changes between versions, organized by risk level
+unreal/
+├── VERSION.md              # Pinned UE version, verification date, knowledge gap window
+├── breaking-changes.md     # API changes between UE versions, organized by risk level
 ├── deprecated-apis.md      # "Don't use X → Use Y" lookup tables
 ├── current-best-practices.md  # New practices not in model training data
-└── modules/                # Per-subsystem quick references (~150 lines max each)
-    ├── rendering.md
-    ├── physics.md
-    └── ...
+├── PLUGINS.md              # Plugin index
+├── modules/                # Per-subsystem quick references (~150 lines max each)
+│   ├── rendering.md
+│   ├── physics.md
+│   └── ...
+└── plugins/                # Per-plugin notes (GAS, CommonUI, PCG, etc.)
 ```
 
 ## How Agents Use These Files

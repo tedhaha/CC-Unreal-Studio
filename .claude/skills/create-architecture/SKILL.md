@@ -172,8 +172,8 @@ Format as a table per layer, then as an ASCII dependency diagram.
 relevant module reference doc. If an API is post-cutoff, flag it:
 
 ```
-⚠️  [ClassName.method()] — Godot 4.6 (post-cutoff, HIGH risk)
-    Verified against: docs/engine-reference/godot/modules/[domain].md
+⚠️  [UClassName::Method()] — UE 5.7 (post-cutoff, HIGH risk)
+    Verified against: docs/engine-reference/unreal/modules/[domain].md
     Behaviour confirmed: [yes / NEEDS VERIFICATION]
 ```
 
@@ -212,9 +212,10 @@ Define the public contracts between modules. For each boundary:
 Write in pseudocode or the project's actual language (from technical preferences).
 These become the contracts programmers implement against.
 
-**Engine awareness check**: If any interface uses engine-specific types (e.g.
-`Node`, `Resource`, `Signal` in Godot), flag the version and verify the type
-exists and has not changed signature in the target engine version.
+**Engine awareness check**: If any interface uses Unreal-specific types
+(e.g. `UObject`, `AActor`, `UInterface`, `FName`, GAS attribute sets,
+delegates), flag the UE version and verify the type exists and has not
+changed signature in the pinned UE version.
 
 ---
 

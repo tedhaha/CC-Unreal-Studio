@@ -7,7 +7,7 @@
 - `design/gdd/systems-index.md` — 6 MVP systems listed, all marked `Status: GDD Complete`
 - `design/gdd/` — 6 GDD files present
 - `design/gdd/gdd-cross-review-2026-03-10.md` — cross-review report, verdict: CONCERNS (1 low-priority note)
-- Engine configured (Godot 4.6, `/setup-engine` complete)
+- Engine pinned (Unreal Engine 5.7, `/setup-engine refresh` complete)
 
 **Session Duration:** ~20 minutes
 **Turns:** 7
@@ -37,7 +37,7 @@
 > | `/design-review` per GDD | Each GDD reviewed | ✅ (6/6 review comments found) |
 > | Cross-GDD review report | `design/gdd/gdd-cross-review-*.md` exists | ✅ |
 > | Cross-review verdict | PASS or CONCERNS (not FAIL) | ✅ CONCERNS |
-> | Engine configured | `production/stage.txt` or CLAUDE.md engine entry | ✅ Godot 4.6 |
+> | Engine pinned | `production/stage.txt` or CLAUDE.md engine entry | ✅ Unreal Engine 5.7 |
 >
 > ---
 > **Content Scan:**
@@ -98,7 +98,7 @@
 >
 > **Optional but recommended:**
 > - `/tech-debt` scan if you have any prototype code you plan to carry forward
-> - `/setup-engine` re-run if you haven't yet fetched Godot 4.6 API snapshots
+> - `/setup-engine refresh` if you haven't yet refreshed the UE 5.7 API snapshots in `docs/engine-reference/unreal/`
 >
 > **Tip:** Start with `/architecture-decision` for the item stack size conflict. It's a quick win that closes an open question before it creates ambiguity in two ADRs later.
 

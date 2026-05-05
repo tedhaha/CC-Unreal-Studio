@@ -3,7 +3,7 @@
 **Context:** Solo indie dev, week 3 of project. `/map-systems` already ran and produced `design/gdd/systems-index.md`. The movement system is listed as MVP tier, Foundation priority.
 
 **Starting State:**
-- `design/gdd/game-concept.md` exists (survival-crafting game, 2D, Godot 4.6)
+- `design/gdd/game-concept.md` exists (survival-crafting game, third-person 3D, Unreal Engine 5.7)
 - `design/gdd/systems-index.md` exists (15 systems identified, movement is first in design order)
 - No per-system GDDs written yet
 - No upstream dependencies for movement (it is the foundation)
@@ -32,9 +32,9 @@
 >
 > | Domain | Signal |
 > |--------|--------|
-> | Engine | Godot 4.6 — CharacterBody2D with move_and_slide() is well-supported |
-> | Physics | Jolt is now the default in 4.6 — 2D movement unaffected, but note for future 3D work |
-> | Downstream risk | Stamina system listed as downstream dep — movement must expose a stamina callback hook |
+> | Engine | Unreal Engine 5.7 — `ACharacter` + `UCharacterMovementComponent` covers third-person locomotion well; consider Mover plugin for advanced cases |
+> | Physics | Chaos is the default — character movement is kinematic via CMC, not Chaos-driven, so no physics interactions to worry about for MVP |
+> | Downstream risk | Stamina system listed as downstream dep — movement must expose a stamina callback (delegate or GAS Attribute reaction) |
 >
 > The GDD template has **8 required sections**. We'll go one at a time:
 > `Overview → Player Fantasy → Detailed Rules → Formulas → Edge Cases → Dependencies → Tuning Knobs → Acceptance Criteria`
@@ -186,10 +186,10 @@
 - Roll on slick rock (still applies slick friction to stopping, not to the roll itself)
 
 **Section 6 — Dependencies** covered:
-- **Stamina system** (downstream): movement exposes `on_stamina_event(type: String, amount: float)` signal
-- **Inventory system** (downstream): listens to `carrying_heavy_object_changed(is_heavy: bool)` signal
-- **Input system**: movement direction from `InputMap` — standard Godot action names (`ui_left`, `ui_right`, etc.)
-- **Terrain layer**: tile metadata drives terrain modifier lookup
+- **Stamina system** (downstream): movement exposes `OnStaminaEvent(EStaminaEventType Type, float Amount)` delegate
+- **Inventory system** (downstream): listens to `OnCarryingHeavyObjectChanged(bool bIsHeavy)` delegate
+- **Input system**: movement direction from Enhanced Input — standard `IA_Move`, `IA_Sprint` Input Actions
+- **Terrain layer**: physical material on landscape drives terrain modifier lookup
 
 **Section 7 — Tuning Knobs** covered:
 - `base_walk_speed` (default: 120 px/s)

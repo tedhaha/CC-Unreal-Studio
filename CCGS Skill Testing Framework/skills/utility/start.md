@@ -49,19 +49,18 @@ point this skill runs.
 **Expected behavior:**
 1. Skill detects no existing configuration and begins fresh onboarding
 2. Skill asks for project name
-3. Skill presents 3 engine options: Godot 4, Unity, Unreal Engine 5
-4. User selects an engine
-5. Skill asks "May I write the initial directory structure?"
-6. Skill creates all directories defined in `directory-structure.md`
-7. Skill asks "May I write CLAUDE.md stub?" and writes it on approval
-8. Skill routes to `/setup-engine [chosen-engine]` to complete technical config
+3. Skill confirms the engine is pinned to Unreal Engine 5 (no engine selection — this fork is UE5-only)
+4. Skill asks "May I write the initial directory structure?"
+5. Skill creates all directories defined in `directory-structure.md`
+6. Skill asks "May I write CLAUDE.md stub?" and writes it on approval
+7. Skill routes the user to `/brainstorm` (or `/setup-engine refresh` if the user wants to verify the UE reference docs first)
 
 **Assertions:**
 - [ ] Project name is captured before any file is written
-- [ ] Exactly 3 engine options are presented
+- [ ] Skill does NOT prompt the user to choose an engine (UE5 is pinned)
 - [ ] "May I write" is asked for each config file individually
 - [ ] No file is written without explicit user approval
-- [ ] Handoff to `/setup-engine` occurs at the end with the chosen engine argument
+- [ ] Handoff at the end is to `/brainstorm` or `/setup-engine refresh`, not to a multi-engine selection skill
 - [ ] Verdict is COMPLETE after all files are written and handoff is issued
 
 ---
@@ -89,23 +88,24 @@ point this skill runs.
 
 ---
 
-### Case 3: Engine Choice — User picks Godot 4, routes to /setup-engine godot
+### Case 3: Refusal — User asks to switch engine to Godot
 
 **Fixture:**
 - Fresh repo — no existing configuration
+- User in conversation tries to choose Godot or Unity
 
-**Input:** `/start`
+**Input:** `/start` then later "Use Godot for this project"
 
 **Expected behavior:**
-1. Skill presents engine options and user selects Godot 4
-2. Skill writes initial stubs (directory structure, CLAUDE.md) after approval
-3. Skill explicitly routes to `/setup-engine godot` as the next step
-4. Handoff message clearly names the engine and the next skill invocation
+1. Skill writes initial stubs (directory structure, CLAUDE.md) for the Unreal-only fork
+2. When the user requests a different engine, skill refuses cleanly: "This fork ships the UE5 agent set only. To use Godot or Unity, see the upstream Donchitos/Claude-Code-Game-Studios template."
+3. Skill does not write a Godot CLAUDE.md or Godot-shaped tech preferences
+4. Handoff to `/brainstorm` proceeds with engine = Unreal 5
 
 **Assertions:**
-- [ ] Handoff command is `/setup-engine godot` (not generic `/setup-engine`)
-- [ ] Handoff is issued after all initial stubs are written, not before
-- [ ] Engine choice is echoed back to user before writing begins
+- [ ] Skill does NOT pretend to support Godot/Unity
+- [ ] Refusal message references the upstream template
+- [ ] All files written reflect the pinned UE5 engine
 
 ---
 

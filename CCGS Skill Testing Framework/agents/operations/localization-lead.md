@@ -19,13 +19,14 @@
 
 ## Test Cases
 
-### Case 1: In-domain request — string extraction pipeline for a Unity project
-**Input**: "Set up a string extraction pipeline for our Unity game. We need to get all localizable strings into a format translators can work with."
+### Case 1: In-domain request — string extraction pipeline for the Unreal project
+**Input**: "Set up a string extraction pipeline for our Unreal game. We need to get all localizable strings into a format translators can work with."
 **Expected behavior**:
-- Produces a concrete extraction configuration covering: which string types to extract (UI labels, dialogue, item descriptions — not debug strings), the tool to use (e.g., Unity Localization package string tables, or a custom extraction script targeting specific component types), and the output format (CSV, XLIFF, or TMX — notes which formats are compatible with common TMS tools like Crowdin or Lokalise)
-- Specifies the folder structure: e.g., `assets/localization/en/` as the source locale, `assets/localization/{locale}/` for translated files
-- Notes that string keys must be stable (do not use index-based keys) — key changes break all existing translations
-- Does NOT produce Unity C# code for the i18n implementation — marks as [TO BE IMPLEMENTED BY PROGRAMMER]
+- Produces a concrete configuration using Unreal's built-in Localization Dashboard (`Window → Tools → Localization Dashboard`) plus the `UnrealEditor-Cmd ... -Run=GatherText` CLI workflow for CI integration
+- Covers: which `FText` sources to gather (UI widgets, dialogue DataTables, item DataAssets — not debug `LogText`), the export format (PO is the UE-native portable format; XLIFF is achievable via a Localization Compiler plugin), and how this hands off to TMS tools (Crowdin, Lokalise, memoQ)
+- Specifies the folder structure: `Content/Localization/<TargetName>/<Culture>/`
+- Notes that the localization "Namespace" + "Key" pair must be stable — renaming either invalidates existing translations
+- Does NOT produce `UMyLocSubsystem` C++ code for the i18n implementation — marks as [TO BE IMPLEMENTED BY PROGRAMMER]
 
 ### Case 2: Out-of-domain request — translate game dialogue
 **Input**: "Translate the following English dialogue into French: 'Well met, traveler. The road ahead is treacherous.'"

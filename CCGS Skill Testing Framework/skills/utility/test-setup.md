@@ -2,17 +2,17 @@
 
 ## Skill Summary
 
-`/test-setup` scaffolds the test framework for the project based on the
-configured engine. It creates the `tests/` directory structure defined in
-`coding-standards.md` (unit/, integration/, performance/, playtest/) and
-generates the appropriate test runner configuration for the detected engine:
-GdUnit4 config for Godot, Unity Test Runner asmdef for Unity, or Unreal headless
-runner for Unreal Engine.
+`/test-setup` (Unreal-only fork) scaffolds the Unreal Automation Testing
+framework + CI/CD pipeline for the project. It creates the `tests/` directory
+structure (unit/, integration/, smoke/, evidence/), generates a UE test
+module under `Source/<ProjectName>Tests/`, writes a working example
+Automation Test, and produces a GitHub Actions workflow for headless test runs.
 
-Each file or directory created is gated behind a "May I write" ask. If the test
-framework already exists, the skill verifies the configuration rather than
-reinitializing. No director gates apply. The verdict is COMPLETE when the
-scaffold is in place.
+Each file or directory is gated behind a "May I write" ask. The skill never
+overwrites existing test files — it only creates files that are missing. If
+everything is already in place, it reports the configuration as verified.
+No director gates apply. The verdict is COMPLETE when the scaffold is in
+place (or already complete).
 
 ---
 
@@ -23,8 +23,8 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" collaborative protocol language before creating files
-- [ ] Has a next-step handoff (e.g., `/test-helpers` to generate helper utilities)
+- [ ] Contains "May I write" / "May I create" collaborative protocol language
+- [ ] Has a next-step handoff (e.g., `/test-helpers` for assertion library, `/qa-plan` for sprint test planning)
 
 ---
 
@@ -36,111 +36,110 @@ None. `/test-setup` is a scaffolding utility. No director gates apply.
 
 ## Test Cases
 
-### Case 1: Happy Path — Godot project, scaffolds GdUnit4 test structure
+### Case 1: Happy Path — Fresh project, scaffolds full UE Automation test setup
 
 **Fixture:**
-- `technical-preferences.md` has engine set to Godot 4, language GDScript
-- `tests/` directory does not exist yet
+- `technical-preferences.md` confirms engine is Unreal Engine 5.x
+- No `tests/`, no `Source/<ProjectName>Tests/`, no `.github/workflows/tests.yml`
 
 **Input:** `/test-setup`
 
 **Expected behavior:**
-1. Skill reads engine from `technical-preferences.md` → Godot 4 + GDScript
-2. Skill drafts the test directory structure: tests/unit/, tests/integration/,
-   tests/performance/, tests/playtest/, and a GdUnit4 runner config file
-3. Skill asks "May I write the tests/ directory structure?"
-4. Directories and GdUnit4 runner script created on approval
-5. Skill confirms the runner script matches the CI command in coding-standards.md:
-   `godot --headless --script tests/gdunit4_runner.gd`
-6. Verdict is COMPLETE
+1. Skill verifies the engine is Unreal (sanity check — fork is UE-only)
+2. Skill drafts the plan: `tests/{unit,integration,smoke,evidence}/`,
+   `Source/<ProjectName>Tests/` module + Build.cs + example test, and
+   `.github/workflows/tests.yml`
+3. Skill asks "May I create these files? I will not overwrite anything that already exists."
+4. After approval, all files are written
+5. Output includes the headless run command:
+   `UnrealEditor-Cmd <ProjectPath>.uproject -ExecCmds="Automation RunTests MyGame.; Quit" -nullrhi -unattended -nopause -log`
+6. Output reminds the user to add the new test module to `<ProjectName>.uproject` and the Editor target
+7. Verdict is COMPLETE
 
 **Assertions:**
-- [ ] All 4 subdirectories (unit/, integration/, performance/, playtest/) are created
-- [ ] GdUnit4 runner config is generated
-- [ ] Runner script path matches coding-standards.md CI command
-- [ ] "May I write" is asked before creating any files
+- [ ] All 4 `tests/` subdirectories (unit/, integration/, smoke/, evidence/) are created
+- [ ] `Source/<ProjectName>Tests/<ProjectName>Tests.Build.cs` is created
+- [ ] At least one example Automation Test (`IMPLEMENT_SIMPLE_AUTOMATION_TEST(...)`) is created
+- [ ] `.github/workflows/tests.yml` is created and uses the headless `-nullrhi` runner
+- [ ] "May I create" is asked before writing any files
 - [ ] Verdict is COMPLETE
 
 ---
 
-### Case 2: Unity Project — Scaffolds Unity Test Runner with asmdef
+### Case 2: Existing partial scaffold — only fills the gaps
 
 **Fixture:**
-- `technical-preferences.md` has engine set to Unity, language C#
-- `tests/` directory does not exist
+- `tests/unit/` exists; `tests/smoke/` and `tests/evidence/` are missing
+- `Source/<ProjectName>Tests/` exists with a Build.cs but no example test
+- `.github/workflows/tests.yml` is missing
 
 **Input:** `/test-setup`
 
 **Expected behavior:**
-1. Skill reads engine → Unity + C#
-2. Skill creates `Tests/` directory with Unity conventions (capitalized)
-3. Skill generates `Tests/Tests.asmdef` and `Tests/Editor/EditorTests.asmdef`
-4. EditMode and PlayMode test runner modes are configured
-5. Skill asks "May I write the Tests/ directory structure?"
-6. Verdict is COMPLETE
+1. Skill detects the existing pieces and lists what is missing
+2. Skill drafts a plan that ONLY creates the missing files
+3. Skill asks "May I create these missing files?"
+4. After approval, only the gap files are written — existing files are untouched
+5. Verdict is COMPLETE
 
 **Assertions:**
-- [ ] Unity-specific `Tests/` structure is created (not the Godot structure)
-- [ ] `.asmdef` files are generated
-- [ ] EditMode and PlayMode runner config is present
+- [ ] Skill does NOT overwrite the existing Build.cs or `tests/unit/` contents
+- [ ] Only the missing files are created
 - [ ] Verdict is COMPLETE
 
 ---
 
-### Case 3: Test Framework Already Exists — Verifies config, not re-initialized
+### Case 3: Already complete — verifies and reports no-op
 
 **Fixture:**
-- `tests/unit/`, `tests/integration/` exist
-- GdUnit4 runner script exists (Godot project)
+- `tests/{unit,integration,smoke,evidence}/` all present
+- `Source/<ProjectName>Tests/` module compiles with at least one example test
+- `.github/workflows/tests.yml` exists
 
 **Input:** `/test-setup`
 
 **Expected behavior:**
-1. Skill detects existing tests/ structure
-2. Skill reports: "Test framework already exists — verifying configuration"
-3. Skill checks: runner script path, directory completeness, CI command alignment
-4. If all checks pass: reports "Configuration verified — no changes needed"
-5. If checks fail (e.g., missing tests/performance/): reports specific gap and
-   asks "May I add the missing directories?"
+1. Skill detects everything in place
+2. Skill reports: "Test infrastructure already in place. Re-run with `/test-setup force` to regenerate any missing pieces."
+3. No files are created or modified
+4. Verdict is COMPLETE
 
 **Assertions:**
-- [ ] Skill does NOT reinitialize when framework exists
-- [ ] Verification checks are performed on existing structure
-- [ ] Only missing parts trigger a "May I write" ask
-- [ ] Verdict is COMPLETE whether everything was OK or gaps were fixed
+- [ ] No file is written
+- [ ] Skill explicitly mentions the `force` argument as the override
+- [ ] Verdict is COMPLETE
 
 ---
 
-### Case 4: No Engine Configured — Redirects to /setup-engine
+### Case 4: Force argument — creates missing pieces even if structure exists
 
 **Fixture:**
-- `technical-preferences.md` contains only placeholders (engine not set)
+- `tests/unit/` exists, but `Source/<ProjectName>Tests/` is missing entirely
 
-**Input:** `/test-setup`
+**Input:** `/test-setup force`
 
 **Expected behavior:**
-1. Skill reads `technical-preferences.md` and finds engine placeholder
-2. Skill reports: "Engine not configured — cannot scaffold engine-specific test framework"
-3. Skill suggests running `/setup-engine` first
-4. No directories or files are created
+1. Skill skips the "already exists" early-exit
+2. Skill creates the missing `Source/<ProjectName>Tests/` module + example test
+3. Skill does NOT overwrite the existing `tests/unit/` contents
+4. Verdict is COMPLETE
 
 **Assertions:**
-- [ ] Error message explicitly states engine is not configured
-- [ ] `/setup-engine` is suggested as the next step
-- [ ] No write tool is called
-- [ ] Verdict is not COMPLETE (blocked state)
+- [ ] `force` skips the early-exit but does NOT overwrite existing files
+- [ ] Missing pieces are created
+- [ ] Verdict is COMPLETE
 
 ---
 
-### Case 5: Director Gate Check — No gate; test-setup is a scaffolding utility
+### Case 5: Director gate check — No gate; test-setup is a scaffolding utility
 
 **Fixture:**
-- Engine configured, tests/ does not exist
+- Any fixture
 
 **Input:** `/test-setup`
 
 **Expected behavior:**
-1. Skill scaffolds and writes all test framework files
+1. Skill scaffolds and writes all test framework files (or reports verified)
 2. No director agents are spawned
 3. No gate IDs appear in output
 
@@ -153,21 +152,22 @@ None. `/test-setup` is a scaffolding utility. No director gates apply.
 
 ## Protocol Compliance
 
-- [ ] Reads engine from `technical-preferences.md` before generating any scaffold
-- [ ] Generates engine-appropriate test runner config (not generic)
-- [ ] Creates all 4 subdirectories from coding-standards.md
-- [ ] Asks "May I write" before creating files
-- [ ] Detects existing framework and offers verification (not reinitialization)
-- [ ] Verdict is COMPLETE when scaffold is in place
+- [ ] Confirms engine is Unreal before scaffolding (sanity check, not selection)
+- [ ] Generates the UE-native test setup (Automation Test module, headless CI invocation)
+- [ ] Asks "May I create" before writing files
+- [ ] Never overwrites existing test files — always additive
+- [ ] `force` flag skips the "already exists" early-exit but never overwrites
+- [ ] Surfaces the manual `<ProjectName>.uproject` / `*.Target.cs` edits required (does not attempt to auto-edit those)
+- [ ] Verdict is COMPLETE when scaffold is in place or verified
 
 ---
 
 ## Coverage Notes
 
-- Unreal Engine test scaffolding (headless runner with `-nullrhi`) follows the
-  same pattern as Cases 1 and 2 and is not separately fixture-tested.
-- CI integration file generation (e.g., `.github/workflows/test.yml`) is
-  referenced but not assertion-tested here — it may be a separate skill concern.
-- The case where tests/ exists but is from a different engine (e.g., Unity tests
-  in a now-Godot project) is not tested; the skill would detect the mismatch
-  and offer to reconcile.
+- The exact contents of the example Automation Test (assertion choice, category
+  string) are not assertion-tested here — only that one exists and uses the
+  `IMPLEMENT_SIMPLE_AUTOMATION_TEST` macro.
+- CI runner choice (self-hosted vs hosted with Unreal container) is documented
+  in the generated workflow but not exercised here.
+- `UE_EDITOR_PATH` configuration is documented in the post-setup summary but
+  the user must set it on the runner manually.

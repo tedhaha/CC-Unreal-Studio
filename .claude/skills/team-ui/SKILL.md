@@ -31,7 +31,7 @@ Use the Task tool to spawn each team member as a subagent:
 - `subagent_type: ux-designer` — User flows, wireframes, accessibility, input handling
 - `subagent_type: ui-programmer` — UI framework, screens, widgets, data binding
 - `subagent_type: art-director` — Visual style, layout polish, art bible consistency
-- `subagent_type: [UI engine specialist]` — Engine-specific UI pattern validation (e.g., unity-ui-specialist, ue-umg-specialist, godot-specialist)
+- `subagent_type: ue-umg-specialist` — UMG/CommonUI pattern validation, widget hierarchy, data binding, input routing
 - `subagent_type: accessibility-specialist` — Accessibility compliance audit
 
 Always provide full context in each agent's prompt (feature requirements, existing UI patterns, platform targets). Launch independent agents in parallel where the pipeline allows it (e.g., Phase 4 review agents can run simultaneously).
@@ -88,11 +88,12 @@ Delegate to **art-director**:
 
 ### Phase 3: Implementation
 
-Before implementation begins, spawn the **engine UI specialist** (from `.claude/docs/technical-preferences.md` Engine Specialists → UI Specialist) to review the UX spec and visual design spec for engine-specific implementation guidance:
-- Which engine UI framework should be used for this screen? (e.g., UI Toolkit vs UGUI in Unity, Control nodes vs CanvasLayer in Godot, UMG vs CommonUI in Unreal)
-- Any engine-specific gotchas for the proposed layout or interaction patterns?
-- Recommended widget/node structure for the engine?
-- Output: engine UI implementation notes to hand off to ui-programmer before they begin
+Before implementation begins, spawn **`ue-umg-specialist`** to review the UX spec and visual design spec for UE-specific implementation guidance:
+- UMG vs CommonUI for this screen — and which CommonUI activation/input layer applies?
+- Recommended widget hierarchy (Canvas vs Overlay vs Border vs custom UserWidget composition)
+- Any UMG/CommonUI gotchas for the proposed layout or interaction patterns? (focus order, input routing across activatable layers, gamepad navigation)
+- Data binding strategy: BP property bindings vs C++ events vs MVVM
+- Output: UE UI implementation notes to hand off to ui-programmer before they begin
 
 If no engine is configured, skip this step.
 

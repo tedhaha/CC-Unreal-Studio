@@ -176,5 +176,6 @@ None. `/reverse-document` is a documentation utility. No director gates apply.
 - The case where a source file is readable but contains only auto-generated
   boilerplate with no meaningful logic is not tested; skill would likely produce
   a near-empty skeleton with a PARTIAL verdict.
-- C# and Blueprint source files follow the same inference pattern as GDScript;
-  language-specific differences are handled in the skill body.
+- Blueprint Visual Script and C++ source files both feed into the same inference
+  pattern. Blueprint nodes are read via `.uasset` text-form export when needed;
+  C++ headers/implementations are scanned directly.

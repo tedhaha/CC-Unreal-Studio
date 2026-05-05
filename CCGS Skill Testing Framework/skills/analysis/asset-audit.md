@@ -163,8 +163,9 @@ None. Asset auditing is a read-only analysis skill; no gates are invoked.
 
 ## Coverage Notes
 
-- Metadata checks (e.g., missing texture import settings in Godot `.import` files)
-  are not explicitly tested here; they follow the same FORMAT ISSUE flagging pattern.
+- Metadata checks (e.g., texture LOD groups, sRGB flags, compression settings on
+  Unreal `Texture2D` `.uasset` files) are not explicitly tested here; they
+  follow the same FORMAT ISSUE flagging pattern.
 - The interaction between `/asset-audit` and `/content-audit` (both check GDD
   references vs. assets) is intentional overlap; `/asset-audit` focuses on
   compliance while `/content-audit` focuses on completeness.

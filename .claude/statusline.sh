@@ -59,9 +59,9 @@ if [ -z "$stage" ]; then
     fi
   fi
 
-  # Count source files (language-agnostic)
+  # Count Unreal source/content files
   if [ -d "$cwd/src" ]; then
-    src_count=$(find "$cwd/src" -type f \( -name "*.gd" -o -name "*.cs" -o -name "*.cpp" -o -name "*.h" -o -name "*.py" -o -name "*.rs" -o -name "*.lua" -o -name "*.tscn" -o -name "*.tres" \) 2>/dev/null | wc -l | tr -d ' ')
+    src_count=$(find "$cwd/src" -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.uproject" -o -name "*.uplugin" -o -name "*.Build.cs" -o -name "*.Target.cs" \) 2>/dev/null | wc -l | tr -d ' ')
   fi
 
   # Check for ADRs (signals Pre-Production phase)

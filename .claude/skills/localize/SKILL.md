@@ -276,10 +276,10 @@ Grep `src/` for VO audio references. Verify each referenced path exists in `asse
 Right-to-left languages (Arabic, Hebrew, Persian, Urdu) require layout mirroring beyond
 just translating text. This mode validates the implementation.
 
-Read `.claude/docs/technical-preferences.md` to determine the engine. Then check:
+Engine is Unreal 5.x. Check:
 
 **Layout mirroring**
-- Is RTL layout enabled in the engine? (Godot: `Control.layout_direction`, Unity: `RTL Support` package, Unreal: text direction flags)
+- Is RTL enabled in UMG? (`bIsRightToLeft` on root widget, `FlowDirectionPreference` on Text Block, mirrored Border/HBox arrangement)
 - Are all UI containers set to auto-mirror, or are positions hardcoded?
 - Do progress bars, health bars, and directional indicators mirror correctly?
 

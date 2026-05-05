@@ -1,22 +1,25 @@
 <p align="center">
-  <h1 align="center">Claude Code Game Studios</h1>
+  <h1 align="center">CC-Unreal-Studio</h1>
   <p align="center">
-    Turn a single Claude Code session into a full game development studio.
+    Turn a single Claude Code session into a full Unreal Engine 5 development studio.
     <br />
-    49 agents. 72 skills. One coordinated AI team.
+    39 agents. 72 skills. One coordinated AI team.
   </p>
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
-  <a href=".claude/agents"><img src="https://img.shields.io/badge/agents-49-blueviolet" alt="49 Agents"></a>
+  <a href=".claude/agents"><img src="https://img.shields.io/badge/agents-39-blueviolet" alt="39 Agents"></a>
   <a href=".claude/skills"><img src="https://img.shields.io/badge/skills-72-green" alt="72 Skills"></a>
   <a href=".claude/hooks"><img src="https://img.shields.io/badge/hooks-12-orange" alt="12 Hooks"></a>
   <a href=".claude/rules"><img src="https://img.shields.io/badge/rules-11-red" alt="11 Rules"></a>
+  <a href="https://docs.unrealengine.com/5.7/"><img src="https://img.shields.io/badge/engine-Unreal%205.7-313131?logo=unrealengine&logoColor=white" alt="Unreal Engine 5.7"></a>
   <a href="https://docs.anthropic.com/en/docs/claude-code"><img src="https://img.shields.io/badge/built%20for-Claude%20Code-f5f5f5?logo=anthropic" alt="Built for Claude Code"></a>
-  <a href="https://www.buymeacoffee.com/donchitos3"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20this%20project-FFDD00?logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee"></a>
-  <a href="https://github.com/sponsors/Donchitos"><img src="https://img.shields.io/badge/GitHub%20Sponsors-Support%20this%20project-ea4aaa?logo=githubsponsors&logoColor=white" alt="GitHub Sponsors"></a>
 </p>
+
+> Forked from [Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)
+> and trimmed down to **Unreal Engine 5 only** — Godot and Unity agents,
+> reference docs, and engine-branching examples have all been removed.
 
 ---
 
@@ -24,7 +27,7 @@
 
 Building a game solo with AI is powerful — but a single chat session has no structure. No one stops you from hardcoding magic numbers, skipping design docs, or writing spaghetti code. There's no QA pass, no design review, no one asking "does this actually fit the game's vision?"
 
-**Claude Code Game Studios** solves this by giving your AI session the structure of a real studio. Instead of one general-purpose assistant, you get 49 specialized agents organized into a studio hierarchy — directors who guard the vision, department leads who own their domains, and specialists who do the hands-on work. Each agent has defined responsibilities, escalation paths, and quality gates.
+**CC-Unreal-Studio** solves this by giving your AI session the structure of a real Unreal Engine 5 studio. Instead of one general-purpose assistant, you get 39 specialized agents organized into a studio hierarchy — directors who guard the vision, department leads who own their domains, and specialists (including dedicated Unreal sub-specialists for GAS, Blueprint, replication, and UMG) who do the hands-on work. Each agent has defined responsibilities, escalation paths, and quality gates.
 
 The result: you still make every decision, but now you have a team that asks the right questions, catches mistakes early, and keeps your project organized from first brainstorm to launch.
 
@@ -36,14 +39,11 @@ The result: you still make every decision, but now you have a team that asks the
 - [Studio Hierarchy](#studio-hierarchy)
 - [Slash Commands](#slash-commands)
 - [Getting Started](#getting-started)
-- [Upgrading](#upgrading)
 - [Project Structure](#project-structure)
 - [How It Works](#how-it-works)
 - [Design Philosophy](#design-philosophy)
 - [Customization](#customization)
 - [Platform Support](#platform-support)
-- [Community](#community)
-- [Supporting This Project](#supporting-this-project)
 - [License](#license)
 
 ---
@@ -52,7 +52,7 @@ The result: you still make every decision, but now you have a team that asks the
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| **Agents** | 49 | Specialized subagents across design, programming, art, audio, narrative, QA, and production |
+| **Agents** | 39 | Specialized subagents across design, programming, art, audio, narrative, QA, production, and Unreal Engine 5 |
 | **Skills** | 72 | Slash commands for every workflow phase (`/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
 | **Hooks** | 12 | Automated validation on commits, pushes, asset changes, session lifecycle, agent audit trail, and gap detection |
 | **Rules** | 11 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, and more |
@@ -82,15 +82,17 @@ Tier 3 — Specialists (Sonnet/Haiku)
   live-ops-designer    community-manager
 ```
 
-### Engine Specialists
+### Unreal Engine 5 Specialists
 
-The template includes agent sets for all three major engines. Use the set that matches your project:
+A dedicated lead plus four subsystem specialists cover the full UE5 surface:
 
-| Engine | Lead Agent | Sub-Specialists |
-|--------|-----------|-----------------|
-| **Godot 4** | `godot-specialist` | GDScript, Shaders, GDExtension |
-| **Unity** | `unity-specialist` | DOTS/ECS, Shaders/VFX, Addressables, UI Toolkit |
-| **Unreal Engine 5** | `unreal-specialist` | GAS, Blueprints, Replication, UMG/CommonUI |
+| Agent | Subsystem | When to Use |
+|-------|-----------|-------------|
+| `unreal-specialist` | UE5 lead | Blueprint vs C++ decisions, UE subsystems, optimization |
+| `ue-gas-specialist` | Gameplay Ability System | Abilities, gameplay effects, attribute sets, tags, prediction |
+| `ue-blueprint-specialist` | Blueprint Architecture | BP/C++ boundary, graph standards, naming, BP optimization |
+| `ue-replication-specialist` | Networking / Replication | Property replication, RPCs, prediction, relevancy, bandwidth |
+| `ue-umg-specialist` | UMG / CommonUI | Widget hierarchy, data binding, CommonUI input, UI performance |
 
 ## Slash Commands
 
@@ -144,10 +146,10 @@ All hooks fail gracefully if optional tools are missing — nothing breaks, you 
 
 ### Setup
 
-1. **Clone or use as template**:
+1. **Clone**:
    ```bash
-   git clone https://github.com/Donchitos/Claude-Code-Game-Studios.git my-game
-   cd my-game
+   git clone <this-repo-url> my-unreal-game
+   cd my-unreal-game
    ```
 
 2. **Open Claude Code** and start a session:
@@ -156,18 +158,13 @@ All hooks fail gracefully if optional tools are missing — nothing breaks, you 
    ```
 
 3. **Run `/start`** — the system asks where you are (no idea, vague concept,
-   clear design, existing work) and guides you to the right workflow. No assumptions.
+   clear design, existing work) and guides you to the right workflow. The
+   engine is already pinned to Unreal 5.7, so no engine selection step is needed.
 
    Or jump directly to a specific skill if you already know what you need:
    - `/brainstorm` — explore game ideas from scratch
-   - `/setup-engine godot 4.6` — configure your engine if you already know
    - `/project-stage-detect` — analyze an existing project
-
-## Upgrading
-
-Already using an older version of this template? See [UPGRADING.md](UPGRADING.md)
-for step-by-step migration instructions, a breakdown of what changed between
-versions, and which files are safe to overwrite vs. which need a manual merge.
+   - `/setup-engine refresh` — refresh `docs/engine-reference/unreal/` to a newer UE version
 
 ## Project Structure
 
@@ -274,38 +271,23 @@ This is a **template**, not a locked framework. Everything is meant to be custom
 - **Modify skills** — adjust workflows to match your team's process
 - **Add rules** — create new path-scoped rules for your project's directory structure
 - **Tune hooks** — adjust validation strictness, add new checks
-- **Pick your engine** — use the Godot, Unity, or Unreal agent set (or none)
+- **Bump UE version** — refresh `docs/engine-reference/unreal/` via `/setup-engine refresh` when you upgrade UE
 - **Set review intensity** — `full` (all director gates), `lean` (phase gates only), or `solo` (none). Set during `/start` or edit `production/review-mode.txt`. Override per-run with `--review solo` on any skill.
 
 ## Platform Support
 
 Tested on **Windows 10** with Git Bash. All hooks use POSIX-compatible patterns (`grep -E`, not `grep -P`) and include fallbacks for missing tools. Works on macOS and Linux without modification.
 
-## Community
+## Credits
 
-- **Discussions** — [GitHub Discussions](https://github.com/Donchitos/Claude-Code-Game-Studios/discussions) for questions, ideas, and showcasing what you've built
-- **Issues** — [Bug reports and feature requests](https://github.com/Donchitos/Claude-Code-Game-Studios/issues)
-
----
-
-## Supporting This Project
-
-Claude Code Game Studios is free and open source. If it saves you time or helps you ship your game, consider supporting continued development:
-
-<p>
-  <a href="https://www.buymeacoffee.com/donchitos3"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee"></a>
-  &nbsp;
-  <a href="https://github.com/sponsors/Donchitos"><img src="https://img.shields.io/badge/GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="GitHub Sponsors"></a>
-</p>
-
-- **[Buy Me a Coffee](https://www.buymeacoffee.com/donchitos3)** — one-time support
-- **[GitHub Sponsors](https://github.com/sponsors/Donchitos)** — recurring support through GitHub
-
-Sponsorships help fund time spent maintaining skills, adding new agents, keeping up with Claude Code and engine API changes, and responding to community issues.
+This project is a fork of
+[Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)
+trimmed down to **Unreal Engine 5 only**. All credit for the original
+multi-engine framework, agent hierarchy, skill catalog, hook design, and
+templates goes to the upstream maintainer. Consider sponsoring the original
+project if you find this fork useful.
 
 ---
-
-*Built for Claude Code. Maintained and extended — contributions welcome via [GitHub Discussions](https://github.com/Donchitos/Claude-Code-Game-Studios/discussions).*
 
 ## License
 

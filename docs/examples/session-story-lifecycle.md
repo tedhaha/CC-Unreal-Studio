@@ -114,29 +114,43 @@
 ### Turn 7: Agent Implements and Shows Key Code
 
 **Agent:**
-> Implementing `movement_component.gd`. Key excerpt for your review before I write the file:
+> Implementing `MovementComponent.h/.cpp` (UActorComponent). Key excerpt for your review before I write the files:
 >
-> ```gdscript
-> class_name MovementComponent
-> extends Node
+> ```cpp
+> UENUM(BlueprintType)
+> enum class EStaminaEventType : uint8 { Drain, Recover, Spend };
 >
-> signal stamina_event(type: String, amount: float)
+> UCLASS(ClassGroup=(Movement), meta=(BlueprintSpawnableComponent))
+> class MYGAME_API UMovementComponent : public UActorComponent
+> {
+>     GENERATED_BODY()
 >
-> @export var base_walk_speed: float = 120.0
-> @export var run_multiplier: float = 1.7
-> @export var stamina_drain_walk: float = 2.0
-> @export var stamina_drain_run: float = 6.0
-> @export var stamina_cost_roll: float = 15.0
+> public:
+>     UMovementComponent();
 >
-> var _is_carrying_heavy: bool = false
+>     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStaminaEvent, EStaminaEventType, Type, float, Amount);
+>     UPROPERTY(BlueprintAssignable, Category = "Movement")
+>     FStaminaEvent OnStaminaEvent;
 >
-> func _physics_process(delta: float) -> void:
->     var terrain_mod := _get_terrain_modifier()
->     var effective_speed := _calculate_speed(terrain_mod)
->     # ...
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Tuning") float BaseWalkSpeed     = 280.f;
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Tuning") float RunMultiplier     = 1.7f;
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Tuning") float StaminaDrainWalk  = 2.f;
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Tuning") float StaminaDrainRun   = 6.f;
+>     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Tuning") float StaminaCostRoll   = 15.f;
+>
+> protected:
+>     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTick) override;
+>
+> private:
+>     bool bIsCarryingHeavy = false;
+>
+>     float GetTerrainModifier() const;
+>     float CalculateSpeed(float TerrainMod) const;
+> };
 > ```
 >
-> All values are `@export` — none hardcoded. Is this the direction you want?
+> All tuning values are `UPROPERTY(EditAnywhere)` — none hardcoded — so designers can tweak per-actor in
+> the editor without recompiling. Is this the direction you want?
 
 **User:**
 > Looks good. Write it.
@@ -185,7 +199,7 @@
 > | 4 | Roll invincibility frames work | Manual: user confirmed | ✅ MANUAL |
 > | 5 | Terrain modifiers apply correctly | Manual: user confirmed | ✅ MANUAL |
 > | 6 | Heavy carry disables run | Auto: not yet testable (inventory not integrated) | ⏳ DEFERRED |
-> | 7 | Stamina signals fire correctly | Auto: integration test pending | ⏳ DEFERRED |
+> | 7 | Stamina delegates broadcast correctly | Auto: integration test pending | ⏳ DEFERRED |
 > | 8 | No hardcoded values | Auto: grep for magic numbers → 0 found | ✅ AUTO |
 > | 9 | Slopes >45° block movement | Manual: user confirmed | ✅ MANUAL |
 >
@@ -225,7 +239,7 @@
 >
 > **Deferred criteria logged** (will auto-surface in inventory integration story):
 > - Heavy carry disables run (requires inventory signal)
-> - Stamina signal integration test (requires stamina system)
+> - Stamina delegate integration test (requires stamina system)
 >
 > **Next ready story from sprint:**
 > - STORY-MOV-002: Stamina system — this is the logical next story (downstream dep now unblocked)

@@ -61,27 +61,29 @@ is a separate skill invocation and is NOT triggered here.
 ### Case 2: Fail — Timing dependency detected
 
 **Fixture:**
-- `tests/unit/ui/hud_update_test.gd` contains:
-  ```gdscript
-  await get_tree().create_timer(1.0).timeout
-  assert_eq(label.text, "Ready")
+- `Source/MyGameTests/Private/UI/HudUpdateTest.cpp` contains:
+  ```cpp
+  ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(1.0f));
+  TestEqual(TEXT("HUD label"), Label->GetText().ToString(), TEXT("Ready"));
   ```
-- Real-time wait of 1 second used instead of mock or signal-based assertion
+- Real-time 1-second `FWaitLatentCommand` used instead of polling for the
+  delegate or driving the world tick deterministically
 
-**Input:** `/test-evidence-review tests/unit/ui/hud_update_test.gd`
+**Input:** `/test-evidence-review Source/MyGameTests/Private/UI/HudUpdateTest.cpp`
 
 **Expected behavior:**
 1. Skill reads the test file
-2. Skill detects real-time wait (`create_timer(1.0)`) — non-deterministic timing dependency
+2. Skill detects real-time wait (`FWaitLatentCommand(1.0f)`) — non-deterministic timing dependency
 3. Skill flags this as a FAIL-level finding
 4. Verdict is FAIL
-5. Skill recommends replacing the timer with a signal-based assertion or mock
+5. Skill recommends replacing the latent wait with a delegate-bound poll or a
+   manual `World->Tick(...)` loop that advances simulation time deterministically
 
 **Assertions:**
 - [ ] Real-time wait usage is detected as a non-deterministic timing dependency
 - [ ] Finding is classified as FAIL severity (blocking — violates determinism standard)
 - [ ] Verdict is FAIL
-- [ ] Remediation suggestion references signal-based or mock-based approach
+- [ ] Remediation suggestion references delegate / manual-tick approach
 - [ ] Skill does not edit the test file
 
 ---
@@ -89,13 +91,15 @@ is a separate skill invocation and is NOT triggered here.
 ### Case 3: Fail — Test calls external API directly
 
 **Fixture:**
-- `tests/unit/networking/auth_test.gd` contains:
-  ```gdscript
-  var result = HTTPRequest.new().request("https://api.example.com/auth")
+- `Source/MyGameTests/Private/Networking/AuthTest.cpp` contains:
+  ```cpp
+  TSharedRef<IHttpRequest> Req = FHttpModule::Get().CreateRequest();
+  Req->SetURL(TEXT("https://api.example.com/auth"));
+  Req->ProcessRequest();
   ```
 - Direct HTTP call to external API without a mock
 
-**Input:** `/test-evidence-review tests/unit/networking/auth_test.gd`
+**Input:** `/test-evidence-review Source/MyGameTests/Private/Networking/AuthTest.cpp`
 
 **Expected behavior:**
 1. Skill reads the test file

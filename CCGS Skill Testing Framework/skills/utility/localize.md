@@ -170,7 +170,8 @@ lead agent may review separately but is not invoked within this skill.
 
 - LOCALIZATION COMPLETE is only achievable when all locale files have all keys
   with non-empty values; new-language skeleton creation always results in GAPS FOUND.
-- Engine-specific locale formats (Godot `.translation`, Unity `.po` files) are
-  handled by the skill body; `.csv` is used as the canonical format in tests.
+- Unreal-native locale formats (`.po` per culture under `Content/Localization/<Target>/<Culture>/`)
+  are handled by the skill body via the UE Localization Dashboard / `GatherText` commandlet;
+  `.csv` is used as the canonical format in tests for portability with TMS tools.
 - The case where source strings change at a very high rate (continuous integration
   of new UI text) is not tested; the diff logic handles this case.
