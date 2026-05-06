@@ -30,4 +30,18 @@ ADR Dependencies, Engine Compatibility, GDD Requirements Addressed
 Version-pinned engine API snapshots. **Always check here before using any
 engine API** — the LLM's training data predates the pinned engine version.
 
-Current engine: see `docs/engine-reference/unreal/VERSION.md` (pinned at Unreal Engine 5.x — this fork is UE5-only).
+Key files (UE 5.7):
+
+| File | Role | Loaded |
+|---|---|---|
+| `unreal/VERSION.md` | Pinned version, knowledge gaps, verification dates | Always (root CLAUDE.md `@`-import) |
+| `unreal/ai-coding-guide.md` | AI architecture mental model, intent routing, drift prevention | Always (root CLAUDE.md `@`-import) |
+| `unreal/current-best-practices.md` | UE 5.7 code patterns + snippets (HOW to write code) | On-demand (read before generating engine code) |
+| `unreal/learning-roadmap.md` | Human study guide (URLs, courses, Lyra path) | On-demand (rarely needed by AI) |
+| `unreal/PLUGINS.md` | Per-plugin status (production / beta / experimental) | On-demand |
+| `unreal/breaking-changes.md` | UE 5.3 → 5.7 breaking changes | On-demand |
+| `unreal/deprecated-apis.md` | APIs to avoid + replacements | On-demand |
+| `unreal/modules/*.md` | Per-area API references (animation, audio, input, etc.) | On-demand |
+| `unreal/plugins/*.md` | Per-plugin deep references (GAS, CommonUI, PCG, etc.) | On-demand |
+
+Current engine: see `unreal/VERSION.md` (pinned at Unreal Engine 5.x — this fork is UE5-only).

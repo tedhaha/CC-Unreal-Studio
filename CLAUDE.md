@@ -24,6 +24,14 @@ of concerns and quality.
 
 @docs/engine-reference/unreal/VERSION.md
 
+## UE 5.7 AI Coding Guide & Project Architecture
+
+Always-loaded architectural mental model for drift prevention. Read this
+before any non-trivial UE work — it governs WHAT to choose, project state,
+layer/state ownership, intent routing, and pre-flight checks.
+
+@docs/engine-reference/unreal/ai-coding-guide.md
+
 ## Technical Preferences
 
 @.claude/docs/technical-preferences.md
